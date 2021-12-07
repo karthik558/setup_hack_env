@@ -90,6 +90,8 @@ cd ..
 
 git clone https://github.com/Ethical-Hacking-Tools/Osintgram
 
+cd Osintgram
+
 sudo python3 -m venv venv
 
 sudo pip install -r requirements.txt
