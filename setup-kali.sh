@@ -24,7 +24,7 @@ sudo apt clean && sudo apt update & sudo apt upgrade
 
 sudo apt-get install aptitude && sudo aptitude install libssl-dev bc
 
-sudo apt-get install build-essential libssl-dev libffi-dev python-dev
+sudo apt-get install neofetch build-essential libssl-dev libffi-dev python-dev
 
 sudo apt-get install python3-venv
 
