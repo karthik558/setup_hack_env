@@ -147,11 +147,17 @@ touch run.sh
 ####
 ####
 ####
-#### Some NOTES/INSTRUCTIONS 
+#### Some NOTES/INSTRUCTIONS
+####
 #### Download Full Font : http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
+####
 #### /etc/default/grub.d (Grub resolution and theme fix)
+####
+#### Fix some permission issue
+####
+#### sudo chown -R username: /home/username (eg: sudo chown -R kali: /home/kali) (This will fix permission issue on home directory after doing ./clone)
+#### chsh -s /bin/bash (this is to change zsh to bash) 
 #### 
 ####
 ####
 ####
-#### 
