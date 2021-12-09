@@ -120,27 +120,7 @@ cd dedsec-grub2-theme
 
 sudo python3 install.py
 
-# Kernel Dependencies
-
 cd ../../
-
-cd Workspace
-
-git clone --depth=1 https://github.com/karthik558/AnyKernel3 Anykernel 
-
-git clone --depth=1 https://github.com/kdrag0n/proton-clang CLANG-13
-
-git clone https://github.com/karthik558/MsM-4.14-RyZeN- RyZeN
-
-cd RyZeN
-
-git remote add update https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux.git
-
-git fetch update
-
-cd ..
-
-touch run.sh
 
 ####
 ####
