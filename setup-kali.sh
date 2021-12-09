@@ -98,6 +98,10 @@ sudo pip install -r requirements.txt
 
 cd ..
 
+# David-Bombal Script's 
+
+git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts
+
 # NextFill
 
 git clone https://github.com/thewhiteh4t/nexfil.git
