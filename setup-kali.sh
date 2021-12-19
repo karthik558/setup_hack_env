@@ -10,8 +10,6 @@ cd Tools
 
 # Dependencies 
 
-sudo apt clean && sudo apt update & sudo apt upgrade
-
 sudo apt-get install aptitude && sudo aptitude install libssl-dev bc
 
 sudo apt-get install neofetch build-essential libssl-dev libffi-dev python-dev
@@ -29,6 +27,8 @@ cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
 
 cd ..
+
+sudo apt clean && sudo apt update & sudo apt upgrade
 
 # Phoneinfoga
 
