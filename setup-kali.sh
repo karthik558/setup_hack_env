@@ -4,19 +4,9 @@
 
 pwd
 
-mkdir Tools && mkdir Workspace && mkdir Themes
+mkdir Tools && mkdir Themes
 
 cd Tools
-
-# Fix Kali update&&upgrade slow issue
-
-git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
-
-cd mirrorscript-v2
-
-python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
-
-cd ..
 
 # Dependencies 
 
@@ -29,6 +19,16 @@ sudo apt-get install neofetch build-essential libssl-dev libffi-dev python-dev
 sudo apt-get install python3-venv
 
 sudo apt install python3-pip
+
+# Fix Kali update && upgrade slow issue
+
+git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
+
+cd mirrorscript-v2
+
+python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
+
+cd ..
 
 # Phoneinfoga
 
@@ -135,10 +135,9 @@ cd ../../
 ####
 #### Download Full Font : http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
 ####
-#### /etc/default/grub.d (Grub resolution and theme fix)
+#### /etc/default/grub.d (Grub resolution and theme fix) (after updating grub :- sudo update-grub)
 ####
 #### Fix some permission issue
-####
 #### sudo chown -R username: /home/username (eg: sudo chown -R kali: /home/kali) (This will fix permission issue on home directory after doing ./clone)
 #### chsh -s /bin/bash (this is to change zsh to bash) 
 #### 
