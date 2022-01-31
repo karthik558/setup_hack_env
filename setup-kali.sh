@@ -112,6 +112,16 @@ sudo pip3 install -r requirements.txt
 
 python3 nexfil.py -h
 
+cd ..
+
+# Facebook Brute Force
+
+git clone https://github.com/Ethical-Hacking-Tools/BluForce-FB BluForce
+
+cd BluForce
+
+pip2 install mechanize
+
 cd ../../
 
 ## GRUB THEME ##
