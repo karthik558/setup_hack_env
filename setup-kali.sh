@@ -122,6 +122,20 @@ cd BluForce
 
 pip2 install mechanize
 
+cd ..
+
+# QRLJacking Attack
+
+git clone https://github.com/OWASP/QRLJacking
+
+## Install this for QRLJacking Attack https://github.com/mozilla/geckodriver/releases (download latest) and run this command https://github.com/OWASP/QRLJacking/tree/master/QRLJacker
+
+cd QRLJacking/QRLJacker
+
+pip install -r requirements.txt
+
+python3 QrlJacker.py --help
+
 cd ../../
 
 ## GRUB THEME ##
