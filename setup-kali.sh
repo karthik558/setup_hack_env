@@ -34,9 +34,11 @@ sudo apt clean && sudo apt update & sudo apt upgrade
 
 curl -sSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash
 
-sudo mv ./phoneinfoga /usr/bin/phoneinfoga
+tar -xvf PhoneInfoga_Linux_x86_64.tar.gz
 
-phoneinfoga version
+./phoneinfoga version
+
+sudo mv ./phoneinfoga /usr/bin/phoneinfoga
 
 # Scylla
 
@@ -44,7 +46,7 @@ git clone https://github.com/Ethical-Hacking-Tools/Scylla
 
 cd Scylla
 
-sudo python3 -m pip install -r requirments.txt && python3 scylla.py --help
+sudo python3 -m pip install -r requirments.txt
 
 cd ..
 
