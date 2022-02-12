@@ -124,6 +124,34 @@ pip2 install mechanize
 
 cd ..
 
+# Fluxion
+
+git clone https://github.com/Ethical-Hacking-Tools/fluxion Fluxion
+
+cd Fluxion
+
+#sudo ./fluxion.sh -i
+
+cd ..
+
+# Wifipumkin3
+
+sudo apt install libssl-dev libffi-dev build-essential
+
+git clone https://github.com/Ethical-Hacking-Tools/wifipumpkin3 wifipumpkin3
+
+cd wifipumpkin3
+
+sudo apt-get install python3-pyqt5 hostapd
+
+sudo python3 setup.py install
+
+cd ..
+
+# MARYAM (OSINT TOOL)
+
+sudo apt-get install maryam
+
 # QRLJacking Attack
 
 git clone https://github.com/OWASP/QRLJacking
