@@ -120,7 +120,7 @@ git clone https://github.com/Ethical-Hacking-Tools/BluForce-FB BluForce
 
 cd BluForce
 
-pip2 install mechanize
+pip3 install mechanize
 
 cd ..
 
