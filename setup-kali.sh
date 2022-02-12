@@ -70,7 +70,7 @@ sudo bash linux-installer.sh
 
 sudo python3 -m pip install -r requirments.txt
 
-sudo python3 Storm-Breaker.py
+# sudo python3 Storm-Breaker.py
 
 cd ..
 
@@ -82,7 +82,7 @@ cd sherlock
 
 sudo python3 -m pip install -r requirements.txt
 
-python3 sherlock --help
+# python3 sherlock --help
 
 cd ..
 
@@ -164,7 +164,7 @@ pip install -r requirements.txt
 
 python3 QrlJacker.py --help
 
-cd ../../
+cd ../../../
 
 ## GRUB THEME ##
 
