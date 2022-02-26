@@ -154,6 +154,38 @@ cd ..
 
 sudo apt-get install maryam
 
+# Cam-Hacker
+
+git clone https://github.com/Ethical-Hacking-Tools/Cam-Hackers
+
+cd Cam-Hacker
+
+pip3 install requests
+
+pip3 install colorama
+
+cd ..
+
+# Toutatis
+
+git clone https://github.com/Ethical-Hacking-Tools/toutatis
+
+cd toutatis
+
+python3 setup.py install
+
+cd ..
+
+# MHDDos
+
+git clone https://github.com/Ethical-Hacking-Tools/MHDDoS
+
+cd MHDDoS
+
+pip3 install -r requirements.txt
+
+cd ..
+
 # QRLJacking Attack
 
 git clone https://github.com/OWASP/QRLJacking
