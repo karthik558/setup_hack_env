@@ -176,7 +176,7 @@ git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
 
 cd dedsec-grub2-theme
 
-sudo python3 install.py
+# sudo python3 install.py
 
 cd ../../
 
