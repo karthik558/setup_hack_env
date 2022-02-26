@@ -184,6 +184,8 @@ cd MHDDoS
 
 pip3 install -r requirements.txt
 
+pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade
+
 cd ..
 
 # QRLJacking Attack
