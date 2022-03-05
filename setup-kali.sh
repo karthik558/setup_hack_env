@@ -96,7 +96,7 @@ cd Osintgram
 
 sudo python3 -m venv venv
 
-sudo pip install -r requirements.txt
+pip install -r requirements.txt
 
 cd ..
 
@@ -110,7 +110,7 @@ git clone https://github.com/thewhiteh4t/nexfil.git
 
 cd nexfil
 
-sudo pip3 install -r requirements.txt
+pip3 install -r requirements.txt
 
 python3 nexfil.py -h
 
