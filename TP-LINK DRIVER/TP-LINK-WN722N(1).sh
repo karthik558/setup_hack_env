@@ -18,7 +18,7 @@ sudo apt install dkms && sudo rmmod r8188eu.ko
 
 # Lets clone repo and install it
 
-git clone https://github.com/Ethical-Hacking-Tools/rtl8188eus rtl8188eus && cd rtl8188eus
+git clone https://github.com/aircrack-ng/rtl8188eus rtl8188eus && cd rtl8188eus
 
 # Blacklist our new driver (or else it will not work)
 sudo -i
