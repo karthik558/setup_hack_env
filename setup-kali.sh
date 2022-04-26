@@ -176,6 +176,34 @@ python3 setup.py install
 
 cd ..
 
+# XSpear
+
+git clone https://github.com/hahwul/XSpear
+
+cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem
+
+cd ..
+
+# SpamWA
+
+git clone https://github.com/krypton-byte/SpamWa
+
+# CamPhish
+
+git clone https://github.com/techchipnet/CamPhish
+
+# MobileSecurityFramework
+
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF 
+
+# DEPENDENCIES
+
+sudo apt install tor torbrowser-launcher
+
+sudo apt install maltego
+
+sudo apt -y install seclists
+
 # MHDDos
 
 git clone https://github.com/Ethical-Hacking-Tools/MHDDoS
