@@ -10,7 +10,7 @@ sudo apt update && sudo apt upgrade && sudo apt install bc && sudo apt-get insta
 # Lets get into 2nd step
 # Driver is for 5.10+ kernel (kali)
 
-sudo apt-get install linux-headers-`uname -r` && sudo apt-get install linux-headers-5.10.0-kali6-amd64
+sudo apt-get install linux-headers-`uname -r`
 
 # Let start installing basic modules for driver
 
