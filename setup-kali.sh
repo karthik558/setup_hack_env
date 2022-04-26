@@ -4,7 +4,7 @@
 
 pwd
 
-mkdir Tools && mkdir Themes
+cd .. && mkdir Tools && mkdir Themes
 
 cd Tools
 
