@@ -22,7 +22,7 @@ sudo gzip -d /usr/share/wordlists/rockyou.txt.gz
 
 # Metasploit Dependencies
 
-sudo apt install zipalign
+sudo apt install zipalign apksigner
 
 sudo apt install openjdk-11-jdk
 
