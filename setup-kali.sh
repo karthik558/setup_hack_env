@@ -18,6 +18,8 @@ sudo apt-get install python3-venv
 
 sudo apt install python3-pip
 
+sudo gzip -d /usr/share/wordlists/rockyou.txt.gz
+
 # Fix Kali update && upgrade slow issue
 
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
