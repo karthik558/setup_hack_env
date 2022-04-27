@@ -12,7 +12,7 @@ cd Tools
 
 sudo apt-get install aptitude && sudo aptitude install libssl-dev bc
 
-sudo apt-get install neofetch build-essential libssl-dev libffi-dev python-dev
+sudo apt-get install neofetch build-essential libssl-dev libffi-dev
 
 sudo apt-get install python3-venv
 
