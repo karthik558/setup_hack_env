@@ -20,6 +20,16 @@ sudo apt install python3-pip
 
 sudo gzip -d /usr/share/wordlists/rockyou.txt.gz
 
+# Metasploit Dependencies
+
+sudo apt install zipalign
+
+sudo apt install openjdk-11-jdk
+
+jarsigner
+
+sudo apt install apktool
+
 # Fix Kali update && upgrade slow issue
 
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
