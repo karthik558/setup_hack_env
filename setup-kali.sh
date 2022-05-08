@@ -170,7 +170,7 @@ sudo apt-get install maryam
 
 git clone https://github.com/Ethical-Hacking-Tools/Cam-Hackers
 
-cd Cam-Hacker
+cd Cam-Hackers
 
 pip3 install requests
 
