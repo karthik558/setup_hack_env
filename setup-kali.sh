@@ -1,274 +1,210 @@
-# Kali Desktop Environment Setup 
+# KALI DESKTOP ENVIRONMENT SETUP SCRIPT
+# AUTHOR: KARTHIK LAL (karthik558)
+# DATE:   07.11.2021
+# CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
+# TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
+# USE AT YOUR OWN RISK.
+# LICESNSE: GNU GENERAL PUBLIC LICENSE V3.0
+# OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION 
+# https://www.gnu.org/licenses/gpl-3.0.en.html
+# HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
 
 #!/bin/bash
-
-pwd
-
-cd .. && mkdir Tools && mkdir Themes
-
-cd Tools
-
-# Dependencies 
-
-sudo apt-get install aptitude && sudo aptitude install libssl-dev bc
-
-sudo apt-get install neofetch build-essential libssl-dev libffi-dev
-
-sudo apt-get install python3-venv
-
-sudo apt install python3-pip
-
-sudo gzip -d /usr/share/wordlists/rockyou.txt.gz
-
+# Path: setup-kali.sh
+# Compare this snippet from setup-env.sh:
+# Abort if its not running on root
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+# Abort if not running on Kali Linux
+if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
+   echo "This script must be run on Kali Linux" 1>&2
+   exit 1
+fi
+# Create a directory for the tools and enter into it
+cd .. && mkdir -p Tools && cd Tools
+# Update the system
+apt update
+# Dependencies for kali desktop environment
+apt install aptitude
+aptitude install libssl-dev bc
+apt install build-essential libssl-dev libffi-dev
+apt install libssl-dev libffi-dev build-essential
+# Dependencies for system fetch
+apt install neofetch
+apt install htop
+# Python3 Dependencies
+apt install python3-venv
+apt install python3-pip
+apt install python3-pip php php-cli
+apt install python3-pyqt5 hostapd
+python3 -m venv venv
 # Metasploit Dependencies
-
-sudo apt install zipalign apksigner
-
-sudo apt install openjdk-11-jdk
-
+apt install zipalign apksigner
+apt install openjdk-11-jdk
+apt install apktool
+# Checking if jarsigniner is working or not
 jarsigner
-
-sudo apt install apktool
-
-# Fix Kali update && upgrade slow issue
-
+# Unzip the wordlist
+gzip -d /usr/share/wordlists/rockyou.txt.gz
+# Fix update/upgrade slow issue
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
-
 cd mirrorscript-v2
-
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
-
-cd ..
-
-sudo apt clean && sudo apt update & sudo apt upgrade
-
-# Phoneinfoga
-
+# Clean and upgrade the system
+echo "Do you want to clean and upgrading the system now ? (y/n)"
+read -r answer
+if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
+   apt clean && apt update && apt upgrade
+else
+    echo "You can clean and upgrading the system later"
+    sleep 1
+fi
+# Lets start cloning tools now
+# 1. Phoneinfoga
 curl -sSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash
-
 tar -xvf PhoneInfoga_Linux_x86_64.tar.gz
-
 ./phoneinfoga version
-
 sudo mv ./phoneinfoga /usr/bin/phoneinfoga
-
-# Scylla
-
+# 2. Scylla
 git clone https://github.com/Ethical-Hacking-Tools/Scylla
-
 cd Scylla
-
-sudo python3 -m pip install -r requirments.txt
-
+python3 -m pip install -r requirments.txt
 cd ..
-
-# Seeker 
-
+# 3. Seeker
 git clone https://github.com/Ethical-Hacking-Tools/seeker
-
 cd seeker
-
-sudo apt update && sudo apt install python3-pip php
-
 pip3 install requests
-
 cd ..
-
-# Storm-Breaker
-
-git clone https://github.com/Ethical-Hacking-Tools/Storm-Breaker
-
-cd Storm-Breaker
-
-sudo bash linux-installer.sh
-
-sudo python3 -m pip install -r requirments.txt
-
-# sudo python3 Storm-Breaker.py
-
-cd ..
-
-# Sherlock
-
-git clone https://github.com/Ethical-Hacking-Tools/sherlock sherlock
-
+# 4. Sherlock
+git clone https://github.com/Ethical-Hacking-Tools/sherlock
 cd sherlock
-
-sudo python3 -m pip install -r requirements.txt
-
-# python3 sherlock --help
-
+pip3 install -r requirements.txt
+python3 -m pip3 install -r requirements.txt
 cd ..
-
-# Osintgram
-
+# 5. Osintgram
 git clone https://github.com/Ethical-Hacking-Tools/Osintgram
-
 cd Osintgram
-
-sudo python3 -m venv venv
-
-pip install -r requirements.txt
-
+pip3 install -r requirements.txt
 cd ..
-
-# David-Bombal Script's 
-
+# 6. David-Bombal Scanner and Exploiter
 git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts
-
-# NextFill
-
+# 7. Nextfill
 git clone https://github.com/thewhiteh4t/nexfil.git
-
 cd nexfil
-
 pip3 install -r requirements.txt
-
-python3 nexfil.py -h
-
-cd ..
-
-# Facebook Brute Force
-
-git clone https://github.com/Ethical-Hacking-Tools/BluForce-FB BluForce
-
-cd BluForce
-
-pip3 install mechanize
-
-cd ..
-
-# Fluxion
-
-git clone https://github.com/Ethical-Hacking-Tools/fluxion Fluxion
-
-cd Fluxion
-
-#sudo ./fluxion.sh -i
-
-cd ..
-
-# Wifipumkin3
-
-sudo apt install libssl-dev libffi-dev build-essential
-
-git clone https://github.com/Ethical-Hacking-Tools/wifipumpkin3 wifipumpkin3
-
+# 8. Fluxion
+git clone https://github.com/Ethical-Hacking-Tools/fluxion
+# 9. Wifipumkin3
+git clone https://github.com/Ethical-Hacking-Tools/wifipumpkin3
 cd wifipumpkin3
-
-sudo apt-get install python3-pyqt5 hostapd
-
-sudo python3 setup.py install
-
-cd ..
-
-# MARYAM (OSINT TOOL)
-
-sudo apt-get install maryam
-
-# Cam-Hacker
-
-git clone https://github.com/Ethical-Hacking-Tools/Cam-Hackers
-
-cd Cam-Hackers
-
-pip3 install requests
-
-pip3 install colorama
-
-cd ..
-
-# Toutatis
-
-git clone https://github.com/Ethical-Hacking-Tools/toutatis
-
-cd toutatis
-
 python3 setup.py install
-
 cd ..
-
-# XSpear
-
+# 10. Maryam Scanner (OSINT)
+# As it is available on kali-tools repo we can use it from there instead of cloning it.
+apt install maryam
+# 11. Toutatis
+git clone https://github.com/Ethical-Hacking-Tools/toutatis
+cd toutatis
+python3 setup.py install
+cd ..
+# 12. XSpear
+# Cloning from original repo as it is updated and maintained by maintainers frequently.
 git clone https://github.com/hahwul/XSpear
-
 cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem
-
 cd ..
-
-# SpamWA
-
+# 13. SpamWA (Spam WhatsApp)
 git clone https://github.com/krypton-byte/SpamWa
-
-# CamPhish
-
+# 14. CamPhisher
 git clone https://github.com/techchipnet/CamPhish
-
-# MobileSecurityFramework
-
-git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF 
-
-# DEPENDENCIES
-
-sudo apt install tor torbrowser-launcher
-
-sudo apt install maltego
-
-sudo apt -y install seclists
-
-# MHDDos
-
+# 15. MobileSecurityFramework (MSF) (Security Framework Tool for Mobile Devices and Web Applications)
+# This tool is just cloned , but we need to install it manually. (cuz of internet connection issues)
+git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF
+# 16. Privacy Must Be Protected (PIMP)
+# TOR Browser is not available on Kali Linux so lets install it manually.
+apt install tor torbrowser-launcher
+# 17. Matlego (OSINT TOOL)
+# As it is available on kali-tools repo we can use it from there instead of cloning it.
+apt install maltego
+# Worlist for hacking and for other security cracking purpose. (Wordlist)
+apt -y install seclists
+# 18. DDOS Attack Toolkit (DOS,DDOS)
 git clone https://github.com/Ethical-Hacking-Tools/MHDDoS
-
 cd MHDDoS
-
 pip3 install -r requirements.txt
-
 pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade
-
 cd ..
+# 19. QRLJacking (QR Hacking Tool)
+# Dont clone this tool as of now, because i need to fix this script.
+#git clone https://github.com/OWASP/QRLJacking
+# 20. BEEF (BeEF) (Browser Exploitation Framework)
+# install beef-xss
+# I am not gonna install this tool while running the script , because of internet connection issues.
+apt install beef-xss
+git clone https://github.com/Ethical-Hacking-Tools/beef
+# 21. WPSeku (WiFi Security Scanner)
+git clone https://github.com/andripwn/WPSeku
+cd WPSeku
+pip3 install -r requirements.txt
+cd ..
+## Tool cloning ends here
+# Lets start downloading/setup kali-env dependencies now.
+pwd && ls -l
+# Lets download GRUB Theme for Kali Linux
+echo "Do you want to download and install custom GRUB theme now ? (y/n)"
+read -r answer
+if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
+   cd .. && mkdir -p Grub-Theme && cd Grub-Theme
+   git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
+else
+    echo "You can download and install custom GRUB theme later"
+    sleep 1
+fi
+# Lets clean and upgrade the system one more time
+echo "Let's do some house keeping on your system ? (y/n)"
+read -r answer
+if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
+    echo "Cleaning and upgrading the system now.."
+    sleep 1
+   apt clean && apt update && apt upgrade
+else
+    echo "You can clean and upgrading the system later.."
+    sleep 1
+fi
+# Lets end this here by saying that we are done with Kali-env setup.
+echo "Setting up your hacking machine is completed successfully."
+echo "Now reboot your Kali Linux and enjoy your hacking experience."
+echo "Thanks for using my setup-kali script."
+echo "Visit https://github.com/karthik558"
+echo "For any queries contact me through email : karthik.lal558@gmail.com"
+echo "Happy Hacking.."
+sleep 1
+exit
+# House keeping and script ends here.
+# This script is created by karthik558.
+# If you like this script then please star it on github.
 
-# QRLJacking Attack
-
-git clone https://github.com/OWASP/QRLJacking
-
-## Install this for QRLJacking Attack https://github.com/mozilla/geckodriver/releases (download latest) and run this command https://github.com/OWASP/QRLJacking/tree/master/QRLJacker
-
-cd QRLJacking/QRLJacker
-
-pip install -r requirements.txt
-
-python3 QrlJacker.py --help
-
-cd ../../../
-
-## GRUB THEME ##
-
-cd Themes 
-
-git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
-
-cd dedsec-grub2-theme
-
-# sudo python3 install.py
-
-cd ../../
-
-####
-####
-####
-####
-####
-#### Some NOTES/INSTRUCTIONS
-####
-#### Download Full Font : http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
-####
-#### /etc/default/grub.d (Grub resolution and theme fix) (after updating grub :- sudo update-grub)
-####
-#### Fix some permission issue
-#### sudo chown -R username: /home/username (eg: sudo chown -R kali: /home/kali) (This will fix permission issue on home directory after doing ./clone)
-#### chsh -s /bin/bash (this is to change zsh to bash) 
-#### 
-####
-####
-####
+### NOTE/WARNING :
+### IMPORTANT NOTE : Please do not run this script again , if you have already run this script once.
+### This script will take a lot of time to run.
+### <=== FONT FIXING FOR KALI LINUX ===>
+### For fixing the font issue , download the full font file from this link http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
+### And extract it in /usr/local/share/fonts or /usr/share/fonts folder.
+### <=== FIX GRUB RESOLUTION AND THEME FIX AFTER INSTALLING CUSTOM THEME OR FOR CHANGING THE RESOLTION OF DEFAULT KALI GRUB ===>
+### /etc/default/grub.d folder is used to change the resolution of default Kali GRUB.
+### For changing the resolution of default Kali GRUB , you can use this command : sudo nano /etc/default/grub.d/20-custom.cfg
+### Change the resolution of default Kali GRUB to your liking.
+### Run this command : sudo update-grub && sudo grub-mkconfig -o /boot/grub/grub.cfg && sudo reboot.
+### <=== Fix permission issue after running this script. ===>
+### chown -R username: /home/username (username is your username) eg: chown -R root: /home/root (This will change the permission of /home/root folder to root user)
+### <=== Change ZSH shell to bash shell after running this script. ===>
+### chsh -s /bin/bash (This will change the default shell to bash)
+### THANKS FOR USING THIS SCRIPT.
+### WE ARE HAPPY TO HAVE YOU ON OUR TEAM.
+### WE ARE ALWAYS HERE TO HELP YOU (JUST RAISE A ISSUE ON GITHUB IF YOU HAVE ISSUE WITH THIS SCRIPT).
+### CODED BY : KARTHIK LAL
+### WEBSITE : https://karthik558.tk
+### EMAIL : karthik.lal558@gmail.com
+### GITHUB : karthik558
+### CONTRIBUTIONS ARE WELCOME. :)
