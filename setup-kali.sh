@@ -13,13 +13,16 @@
 # Path: setup-kali.sh
 # Compare this snippet from setup-env.sh:
 # Abort if its not running on root
+   echo "Checking if you are running this script on su mode or not"
+   sleep 1
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 1>&2
+   echo "This script must be run as root"
    exit 1
 fi
 # Abort if not running on Kali Linux
+   echo "This script will not run on any other os"
 if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   echo "This script must be run on Kali Linux" 1>&2
+   echo "This script must be run on Kali Linux"
    exit 1
 fi
 # Create a directory for the tools and enter into it
@@ -52,14 +55,16 @@ gzip -d /usr/share/wordlists/rockyou.txt.gz
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
 cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
-# Clean and upgrade the system
-echo "Do you want to clean and upgrading the system now ? (y/n)"
+# Clean, update and upgrade your kali-machine
+echo "Do you want to clean and upgrade the system now ? (y/n)"
 read -r answer
-if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   apt clean && apt update && apt upgrade
+
+if [[ $answer == "y" ]]; then
+        echo "Your KALI is now UPDATING.. & UPGRADING.."
+        apt clean; apt update; apt upgrade
 else
-    echo "You can clean and upgrading the system later"
-    sleep 1
+        echo "Upgrade later"
+        sleep 1
 fi
 # Lets start cloning tools now
 # 1. Phoneinfoga
@@ -81,7 +86,6 @@ cd ..
 git clone https://github.com/Ethical-Hacking-Tools/sherlock
 cd sherlock
 pip3 install -r requirements.txt
-python3 -m pip3 install -r requirements.txt
 cd ..
 # 5. Osintgram
 git clone https://github.com/Ethical-Hacking-Tools/Osintgram
