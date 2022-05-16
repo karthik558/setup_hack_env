@@ -10,20 +10,26 @@
 # HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
 
 #!/bin/bash
-# Path: setup-kali.sh
-# Compare this snippet from setup-env.sh:
+
 # Abort if its not running on root
    echo "Checking if you are running this script on su mode or not"
-   sleep 1
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
-   exit 1
+   sleep 1
+   exit
+else 
+   echo "You are running this script on su mode"
+   sleep 1
 fi
 # Abort if not running on Kali Linux
-   echo "This script will not run on any other os"
+   echo "Checking if you are running this script on Kali Linux or not"
 if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   echo "This script must be run on Kali Linux"
-   exit 1
+   sleep 1
+   echo "You are running this script on KALI LINUX"
+   clear
+else
+   echo "You are not running this script on KALI LINUX"
+   exit
 fi
 # Create a directory for the tools and enter into it
 cd .. && mkdir -p Tools && cd Tools
@@ -59,9 +65,9 @@ python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
 echo "Do you want to clean and upgrade the system now ? (y/n)"
 read -r answer
 
-if [[ $answer == "y" ]]; then
+if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
         echo "Your KALI is now UPDATING.. & UPGRADING.."
-        apt clean; apt update; apt upgrade
+        apt clean; apt update; apt upgrade;
 else
         echo "Upgrade later"
         sleep 1
@@ -71,7 +77,7 @@ fi
 curl -sSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash
 tar -xvf PhoneInfoga_Linux_x86_64.tar.gz
 ./phoneinfoga version
-sudo mv ./phoneinfoga /usr/bin/phoneinfoga
+mv ./phoneinfoga /usr/bin/phoneinfoga
 # 2. Scylla
 git clone https://github.com/Ethical-Hacking-Tools/Scylla
 cd Scylla

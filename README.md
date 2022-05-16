@@ -1,39 +1,40 @@
 ![HEADER_IMAGE](assets/script-linux.png)
-```
-- ABOUT THIS SCRIPT -
 
-* Set of scripts to clone all tools that i use on my kali-linux.
+## <b> ABOUT THIS SCRIPT
 
-* Included TP-LINK-722N wifi drivers. (check TP-LINK DRIVER folder) (run it according to there file-name).
+* Set of tool's i use to automate my daily tasks and for learning purposes.
+* Included TP-LINK-722N wifi drivers. (check TP-LINK DRIVER folder) (run it according to there file-name). (instructions are on the README.md , check bottom)
+* Tool's are cloned/fetched from (https://github.com/Ethical-Hacking-Tools) 
 
-* Tool's are cloned/fetched from (https://github.com/Ethical-Hacking-Tools).
+## <b> NOTES/INSTRUCTIONS FOR USING THIS SCRIPT !
 
-- NOTES/INSTRUCTIONS -
+* Run the script with root privileges only(sudo).
+* Run the script only on Kali Linux. (forced)
+* Apply (Font & GRUB) path manually. (not necessary)
+* I haven't included script to download burp-suite pro (https://t.me/burpsuite) (for bug-bounty hunters)
 
-* Run script on (sudo su mode).
+## <b> HOW TO USE THIS SCRIPT ?
 
-* Apply (Font & GRUB) path manually.
+* ` git clone https://github.com/karthik558/setup_kali_env `
+* ` cd setup_kali_env `
+* ` chmod +x setup-kali.sh `
+* ` ./setup-kali.sh ` (Only run this script with root privileges)
 
-* Don't forgot to remove folder permission at last (this caused because we run the script on (sudo mode)).
+## <b> HOW TO USE TP-LINK DRIVER SCRIPT ?
 
-* I haven't included script to download burp-suite pro (if you want it then , check this group for latest release , https://t.me/burpsuite)
-```
+* ` git clone https://github.com/karthik558/setup_kali_env `
+* ` cd setup_kali_env && cd TP-LINK* `
+* ` chmod * `
+* ` ./TPSCRIPT1.sh  `
+After completing the process, reboot your KALI-MACHINE after rebooting KALI, run this 
+* ` ./TPSCRIPT2.sh `
+After completing the process, reboot your KALI-MACHINE again.
+* Finally after completing (1 & 2) run 
+* ` injection-test.sh ` 
+For checking if drivers are installed properly or not.
 
-```
-- HOW TO USE THIS SCRIPT ? -
-
-- git clone https://github.com/karthik558/setup_kali_env
-- cd setup_kali_env
-- chmod +x setup-kali.sh
-- bash setup-kali.sh` OR DO `./setup-kali.sh
-```
-```
-- HOW TO USE TP-LINK DRIVER SCRIPT ? -
-
-- git clone https://github.com/karthik558/setup_kali_env
-- cd setup_kali_env && cd TP-LINK*
-- chmod *
-- ./TP-LINK-WN722N(1).sh or bash TP-LINK-WN722N(1).sh (after completing, restart PC)
-- After restarting PC, run this ./TP-LINK-WN722N(2).sh or bash TP-LINK-WN722N(2).sh
-- Finally after completing (1 & 2) run injection-test.sh (for checking if drivers are installed properly or not)
-```
+## <b> CONTRIBUTION !
+### <i> <b> CONTRIBUTIONS AND SUGGESTIONS ARE ALWAYS WELCOME. </i>
+### <i> <b> PLEASE REPORT ANY BUGS OR PROBLEMS TO ME. </i>
+### <i> <b> Include signature of the person who is contributing. (or else it will not accepted)</i>
+### <b> GPL-3.0 LICENSE
