@@ -41,8 +41,18 @@ aptitude install libssl-dev bc
 apt install build-essential libssl-dev libffi-dev
 apt install libssl-dev libffi-dev build-essential
 # Dependencies for system fetch
-apt install neofetch
-apt install htop
+echo "You sure you want to install system fetch? (y/n)"
+read -r answer
+
+if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
+      echo "Installing system fetch"
+      apt install neofetch;
+      echo "installing htop"
+      apt install htop;
+else
+      echo "Skipped installing system fetch"
+      exit
+fi
 # Python3 Dependencies
 apt install python3-venv
 apt install python3-pip
