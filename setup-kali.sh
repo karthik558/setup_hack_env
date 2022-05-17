@@ -61,6 +61,7 @@ gzip -d /usr/share/wordlists/rockyou.txt.gz
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
 cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
+cd ..
 # Clean, update and upgrade your kali-machine
 echo "Do you want to clean and upgrade the system now ? (y/n)"
 read -r answer
