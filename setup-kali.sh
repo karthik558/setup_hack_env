@@ -51,7 +51,7 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
       apt install htop;
 else
       echo "Skipped installing system fetch"
-      exit
+      sleep 1
 fi
 # Python3 Dependencies
 apt install python3-venv
