@@ -46,6 +46,16 @@ read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
       echo "Installing system fetch"
+      echo -ne '####           (20%)\r'
+      sleep 1
+      echo -ne '########       (40%)\r'
+      sleep 1
+      echo -ne '############   (60%)\r'
+      sleep 1
+      echo -ne '################ (80%)\r'
+      sleep 1
+      echo -ne '###################(100%)\r'
+      echo -ne '\n'
       apt install neofetch;
       echo "installing htop"
       apt install htop;
@@ -78,6 +88,16 @@ read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
         echo "Your KALI is now UPDATING.. & UPGRADING.."
+        echo -ne '####           (20%)\r'
+         sleep 1
+         echo -ne '########       (40%)\r'
+         sleep 1
+         echo -ne '############   (60%)\r'
+         sleep 1
+         echo -ne '################ (80%)\r'
+         sleep 1
+         echo -ne '###################(100%)\r'
+         echo -ne '\n'
         apt clean; apt update; apt upgrade;
 else
         echo "Upgrade later"
@@ -176,6 +196,16 @@ pwd && ls -l
 echo "Do you want to download and install custom GRUB theme now ? (y/n)"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
+   echo -ne '####           (20%)\r'
+      sleep 1
+      echo -ne '########       (40%)\r'
+      sleep 1
+      echo -ne '############   (60%)\r'
+      sleep 1
+      echo -ne '################ (80%)\r'
+      sleep 1
+      echo -ne '###################(100%)\r'
+      echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
 else
@@ -187,6 +217,16 @@ echo "Let's do some house keeping on your system ? (y/n)"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "Cleaning and upgrading the system now.."
+    echo -ne '####           (20%)\r'
+      sleep 1
+      echo -ne '########       (40%)\r'
+      sleep 1
+      echo -ne '############   (60%)\r'
+      sleep 1
+      echo -ne '################ (80%)\r'
+      sleep 1
+      echo -ne '###################(100%)\r'
+      echo -ne '\n'
     sleep 1
    apt clean && apt update && apt upgrade
 else
