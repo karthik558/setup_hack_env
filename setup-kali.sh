@@ -69,6 +69,7 @@ apt install python3-pip
 apt install python3-pip php php-cli
 apt install python3-pyqt5 hostapd
 python3 -m venv venv
+pip install pipenv
 # Metasploit Dependencies
 apt install zipalign apksigner
 apt install openjdk-11-jdk
@@ -188,6 +189,12 @@ git clone https://github.com/Ethical-Hacking-Tools/beef
 git clone https://github.com/andripwn/WPSeku
 cd WPSeku
 pip3 install -r requirements.txt
+cd ..
+## 22. Instabruteforce (Instagram Brute Force Tool)
+git clone https://github.com/Ethical-Hacking-Tools/Instabruteforce
+cd Instabruteforce
+pipenv --python 3.9
+pipenv install
 cd ..
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
