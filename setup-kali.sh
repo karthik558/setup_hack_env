@@ -136,6 +136,7 @@ git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts
 git clone https://github.com/thewhiteh4t/nexfil.git
 cd nexfil
 pip3 install -r requirements.txt
+cd ..
 # 8. Fluxion
 git clone https://github.com/Ethical-Hacking-Tools/fluxion
 # 9. Wifipumkin3
