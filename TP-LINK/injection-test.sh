@@ -1,10 +1,3 @@
-# Default interface set to 0 // change this accoding to you pc
-# LICENSE: GPL-3.0-or-later
-# Author: KARTHIK LAL
-# Copyright (C) 2022 KARTHIK LAL
-# This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-# Injection test is done on interface 0/1
-
 #!/bin/bash
 
 # Abort if its not running on root
@@ -41,3 +34,12 @@ else
    aireplay-ng --test wlan1
    echo "Packet injection test done on interface 1 and its working fine"
 fi
+
+##
+## Default interface set to 0 // change this accoding to you pc
+## LICENSE: GPL-3.0-or-later
+## Author: KARTHIK LAL
+## Copyright (C) 2022 KARTHIK LAL
+## This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+## Injection test is done on interface 0/1
+##

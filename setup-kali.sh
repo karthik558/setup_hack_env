@@ -1,14 +1,3 @@
-# KALI DESKTOP ENVIRONMENT SETUP SCRIPT
-# AUTHOR: KARTHIK LAL (karthik558)
-# DATE:   07.11.2021
-# CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
-# TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
-# USE AT YOUR OWN RISK.
-# LICESNSE: GNU GENERAL PUBLIC LICENSE V3.0
-# OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION 
-# https://www.gnu.org/licenses/gpl-3.0.en.html
-# HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
-
 #!/bin/bash
 
 # Abort if its not running on root
@@ -250,10 +239,20 @@ echo "For any queries contact me through email : karthik.lal558@gmail.com"
 echo "Happy Hacking.."
 sleep 1
 exit
-# House keeping and script ends here.
-# This script is created by karthik558.
-# If you like this script then please star it on github.
 
+# House keeping and script ends here.
+##========================================================================================================================##
+## KALI DESKTOP ENVIRONMENT SETUP SCRIPT
+## AUTHOR: KARTHIK LAL (karthik558)
+## DATE:   07.11.2021
+## CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
+## TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
+## USE AT YOUR OWN RISK.
+## LICESNSE: GNU GENERAL PUBLIC LICENSE V3.0
+## OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION 
+## https://www.gnu.org/licenses/gpl-3.0.en.html
+## HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
+##========================================================================================================================##
 ### NOTE/WARNING :
 ### IMPORTANT NOTE : Please do not run this script again , if you have already run this script once.
 ### This script will take a lot of time to run.
