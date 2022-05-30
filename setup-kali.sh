@@ -38,11 +38,11 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
       echo -ne '####           (20%)\r'
       sleep 1
       echo -ne '########       (40%)\r'
-      sleep 1
+      sleep 2
       echo -ne '############   (60%)\r'
-      sleep 1
+      sleep 3
       echo -ne '################ (80%)\r'
-      sleep 1
+      sleep 4
       echo -ne '###################(100%)\r'
       echo -ne '\n'
       apt install neofetch;
@@ -81,11 +81,11 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
         echo -ne '####           (20%)\r'
          sleep 1
          echo -ne '########       (40%)\r'
-         sleep 1
+         sleep 2
          echo -ne '############   (60%)\r'
-         sleep 1
+         sleep 3
          echo -ne '################ (80%)\r'
-         sleep 1
+         sleep 4
          echo -ne '###################(100%)\r'
          echo -ne '\n'
         apt clean; apt update; apt upgrade;
@@ -196,11 +196,11 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '####           (20%)\r'
       sleep 1
       echo -ne '########       (40%)\r'
-      sleep 1
+      sleep 2
       echo -ne '############   (60%)\r'
-      sleep 1
+      sleep 3
       echo -ne '################ (80%)\r'
-      sleep 1
+      sleep 4
       echo -ne '###################(100%)\r'
       echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
@@ -217,11 +217,11 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo -ne '####           (20%)\r'
       sleep 1
       echo -ne '########       (40%)\r'
-      sleep 1
+      sleep 2
       echo -ne '############   (60%)\r'
-      sleep 1
+      sleep 3
       echo -ne '################ (80%)\r'
-      sleep 1
+      sleep 4
       echo -ne '###################(100%)\r'
       echo -ne '\n'
     sleep 1
