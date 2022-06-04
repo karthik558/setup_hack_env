@@ -1,5 +1,5 @@
 #!/bin/bash
-# Path: TP-LINK DRIVER\TP-LINK-WN722N(1).sh
+
 # Abort if its not running on root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
@@ -7,12 +7,12 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Abort if not running on Kali Linux
-if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   echo "This script must be run on Kali Linux" 1>&2
-   exit 1
-fi
+# if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
+#   echo "This script must be run on Kali Linux" 1>&2
+#   exit 1
+# fi
 
-# Welcome Welcome Message
+# Welcome Message
 echo "Welcome to TP-LINK DRIVER run script 2"
 
 # Let's start 

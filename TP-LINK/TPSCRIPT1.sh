@@ -7,10 +7,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Abort if not running on Kali Linux
-if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   echo "This script must be run on Kali Linux" 1>&2
-   exit 1
-fi
+# if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
+#   echo "This script must be run on Kali Linux" 1>&2
+#   exit 1
+# fi
 
 # Let's start
 # 1 Dependencies for running this before installing
