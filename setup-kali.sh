@@ -60,7 +60,7 @@ apt install python3-pyqt5 hostapd
 python3 -m venv venv
 pip install pipenv
 # Metasploit Dependencies
-apt install zipalign apksigner
+apt install zipalign apksigner #https://ibotpeaches.github.io/Apktool/install/ (Download wrapper script and apktool.jar file and move it to /bin, this is latest stable apktool version)
 apt install openjdk-11-jdk
 apt install apktool
 # Checking if jarsigniner is working or not
