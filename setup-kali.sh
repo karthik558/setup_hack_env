@@ -186,6 +186,10 @@ cd Instabruteforce
 pipenv --python 3.9
 pipenv install
 cd ..
+# 23. UserFinder (Find Users on Social Media Platforms)
+git clone https://github.com/Ethical-Hacking-Tools/UserFinder
+## 24. SHARK (Future of phishing attacks)
+sudo wget -qO- https://github.com/Bhaviktutorials/shark/raw/master/setup | sudo bash
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
