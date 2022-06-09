@@ -60,14 +60,14 @@ apt install python3-pyqt5 hostapd
 python3 -m venv venv
 pip install pipenv
 # Metasploit Dependencies
-apt install zipalign apksigner #https://ibotpeaches.github.io/Apktool/install/ (Download wrapper script and apktool.jar file and move it to /bin, this is latest stable apktool version)
+apt install zipalign apksigner
 apt install openjdk-11-jdk
-apt install apktool
+apt install apktool #https://ibotpeaches.github.io/Apktool/install/ (Download wrapper script and apktool.jar file and move it to /bin, this is latest stable apktool version)
 # Checking if jarsigniner is working or not
 jarsigner
-# Unzip the wordlist
+# Unzip the default kali wordlist and remote the tar.gz file
 gzip -d /usr/share/wordlists/rockyou.txt.gz
-# Fix update/upgrade slow issue
+# Fix update/upgrade slow issue on Kali Linux (Kali Mirrorscript-v2 by IceM4nn automatically select the best kali mirror server and apply the configuration)
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
 cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
@@ -94,101 +94,100 @@ else
         sleep 1
 fi
 # Lets start cloning tools now
-# 1. Phoneinfoga
+# 1. Phoneinfoga (Information gathering & OSINT framework for phone numbers)
 curl -sSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash
 tar -xvf PhoneInfoga_Linux_x86_64.tar.gz
 ./phoneinfoga version
 mv ./phoneinfoga /usr/bin/phoneinfoga
-# 2. Scylla
+# 2. Scylla (The Simplistic Information Gathering Engine | Find Advanced Information on a Username, Website, Phone Number, etc.)
 git clone https://github.com/Ethical-Hacking-Tools/Scylla
 cd Scylla
 python3 -m pip install -r requirments.txt
 cd ..
-# 3. Seeker
+# 3. Seeker (Accurately Locate Smartphones using Social Engineering)
 git clone https://github.com/Ethical-Hacking-Tools/seeker
 cd seeker
 pip3 install requests
 cd ..
-# 4. Sherlock
+# 4. Sherlock (Hunt down social media accounts by username across social networks)
 git clone https://github.com/Ethical-Hacking-Tools/sherlock
 cd sherlock
 pip3 install -r requirements.txt
 cd ..
-# 5. Osintgram
+# 5. Osintgram (Osintgram is a OSINT tool on Instagram. It offers an interactive shell to perform analysis on Instagram account of any users by its nickname)
 git clone https://github.com/Ethical-Hacking-Tools/Osintgram
 cd Osintgram
 pip3 install -r requirements.txt
 cd ..
-# 6. David-Bombal Scanner and Exploiter
+# 6. David-Bombal Scanner and Exploiter (David-Bombal script is very useful for performing various types of attacks on a target machine)
 git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts
-# 7. Nextfill
+# 7. Nextfill (OSINT tool for finding profiles by username)
 git clone https://github.com/thewhiteh4t/nexfil.git
 cd nexfil
 pip3 install -r requirements.txt
 cd ..
-# 8. Fluxion
+# 8. Fluxion (Fluxion is a remake of linset by vk496 with enhanced functionality.)
 git clone https://github.com/Ethical-Hacking-Tools/fluxion
-# 9. Wifipumkin3
+# 9. Wifipumkin3 (Powerful framework for rogue access point attack.)
 git clone https://github.com/Ethical-Hacking-Tools/wifipumpkin3
 cd wifipumpkin3
 python3 setup.py install
 cd ..
-# 10. Maryam Scanner (OSINT)
+# 10. Maryam Scanner (OWASP Maryam is a modular/optional open source framework based on OSINT and data gathering.)
 # As it is available on kali-tools repo we can use it from there instead of cloning it.
 apt install maryam
-# 11. Toutatis
+# 11. Toutatis (Toutatis is a tool that allows you to extract information from instagrams accounts such as e-mails, phone numbers and more.)
 git clone https://github.com/Ethical-Hacking-Tools/toutatis
 cd toutatis
 python3 setup.py install
 cd ..
-# 12. XSpear
+# 12. XSpear (Powerfull XSS Scanning and Parameter analysis tool&gem)
 # Cloning from original repo as it is updated and maintained by maintainers frequently.
 git clone https://github.com/hahwul/XSpear
 cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem
 cd ..
-# 13. SpamWA (Spam WhatsApp)
+# 13. SpamWA (A simple python script that can be used to send SMS messages to a list of numbers)
 git clone https://github.com/krypton-byte/SpamWa
-# 14. CamPhisher
+# 14. CamPhisher (Grab cam shots from target's phone front camera or PC webcam just sending a link.)
 git clone https://github.com/techchipnet/CamPhish
-# 15. MobileSecurityFramework (MSF) (Security Framework Tool for Mobile Devices and Web Applications)
+# 15. Mobile Security Framework (Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.)
 # This tool is just cloned , but we need to install it manually. (cuz of internet connection issues)
 git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF
 # 16. Privacy Must Be Protected (PIMP)
-# TOR Browser is not available on Kali Linux so lets install it manually.
-apt install tor torbrowser-launcher
-# 17. Matlego (OSINT TOOL)
+# TOR Browser is not available on Kali Linux by default so lets install it manually.
+apt install tor torbrowser-launcher #(https://www.torproject.org/download/download.html.en)
+# 17. Matlego (OSINT TOOL) (Maltego is a program that can be used to determine the relationships and real world links between: People. Groups of people (social networks) Companies.)
 # As it is available on kali-tools repo we can use it from there instead of cloning it.
 apt install maltego
-# Worlist for hacking and for other security cracking purpose. (Wordlist)
+# SecList (SecLists is the security tester's companion. It's a collection of multiple types of lists used during security assessments, collected in one place. List types include usernames, passwords, URLs, sensitive data patterns, fuzzing payloads, web shells, and many more.)
 apt -y install seclists
-# 18. DDOS Attack Toolkit (DOS,DDOS)
+# 18. MHDDOS (Best DDoS Attack Script Python3, Cyber Attack With 36 Methods)
 git clone https://github.com/Ethical-Hacking-Tools/MHDDoS
 cd MHDDoS
 pip3 install -r requirements.txt
 pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade
 cd ..
-# 19. QRLJacking (QR Hacking Tool)
+# 19. QRLJacking (QRLJacking or Quick Response Code Login Jacking is a simple-but-nasty attack vector affecting all the applications that relays on “Login with QR code” feature as a secure way to login into accounts which aims for hijacking users session by attackers.)
 # Dont clone this tool as of now, because i need to fix this script.
 #git clone https://github.com/OWASP/QRLJacking
-# 20. BEEF (BeEF) (Browser Exploitation Framework)
+# 20. BEEF (Browser Exploitation Framework) (BeEF is short for The Browser Exploitation Framework. It is a penetration testing tool that focuses on the web browser. It is a framework that allows you to create a custom user-agent and inject malicious code into the browser.)
 # install beef-xss
-# I am not gonna install this tool while running the script , because of internet connection issues.
 apt install beef-xss
 git clone https://github.com/Ethical-Hacking-Tools/beef
-# 21. WPSeku (WiFi Security Scanner)
+# 21. WPSeku (WPSeku is a black box WordPress vulnerability scanner that can be used to scan remote WordPress installations to find security issues.)
 git clone https://github.com/andripwn/WPSeku
 cd WPSeku
 pip3 install -r requirements.txt
 cd ..
-## 22. Instabruteforce (Instagram Brute Force Tool)
+## 22. Instabruteforce (Hacking-tool termux-tools termux noob-friendly instagram-bot bruteforce-password-cracker wordlist-techniques).
 git clone https://github.com/Ethical-Hacking-Tools/Instabruteforce
 cd Instabruteforce
 pipenv --python 3.9
 pipenv install
 cd ..
-# 23. UserFinder (Find Users on Social Media Platforms)
+# 23. UserFinder (OSINT tool for finding profiles by username.)
 git clone https://github.com/Ethical-Hacking-Tools/UserFinder
-## 24. SHARK (Future of phishing attacks)
+## 24. SHARK (A shark is a tool that will help you do Phishing in an advanced way so no one checks and identify that you are doing phishing.For those guys who Don't know about Phishing let me explain "Phishing is the fraudulent attempt to obtain sensitive information or data, such as usernames, passwords, by disguising oneself as a trustworthy entity in an electronic communication. Typically carried out by email spoofing, instant messaging, and text messaging, phishing often directs users to enter personal information at a fake website which matches the look and feel of the legitimate site. as shown in MR ROBOT.)
 sudo wget -qO- https://github.com/Bhaviktutorials/shark/raw/master/setup | sudo bash
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
