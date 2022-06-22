@@ -192,6 +192,8 @@ sudo wget -qO- https://github.com/Bhaviktutorials/shark/raw/master/setup | sudo 
 ## 25. MITM Attack
 # MITM Attack is a tool that can be used to perform MITM attacks on the network.
 git clone https://github.com/karthik558/CREATE-MITM-AP
+## 26. Netdiscover (Netdiscover is an active/passive address reconnaissance tool, mainly developed for those wireless networks without dhcp server, when you are wardriving. It can be also used on hub/switched networks.)
+sudo apt install netdiscover
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
