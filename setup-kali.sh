@@ -268,6 +268,7 @@ exit
 ### For fixing the font issue , download the full font file from this link http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
 ### And extract it in /usr/local/share/fonts or /usr/share/fonts folder.
 ### <=== FIX GRUB RESOLUTION AND THEME FIX AFTER INSTALLING CUSTOM THEME OR FOR CHANGING THE RESOLTION OF DEFAULT KALI GRUB ===>
+### New bug on kali-linux (windows partition is not showing on grub after updating and upgrading system) -> FIX GRUB_DISABLE_OS_PROBER=false add on /etc/default/grub
 ### /etc/default/grub.d folder is used to change the resolution of default Kali GRUB.
 ### For changing the resolution of default Kali GRUB , you can use this command : sudo nano /etc/default/grub.d/20-custom.cfg
 ### Change the resolution of default Kali GRUB to your liking.
