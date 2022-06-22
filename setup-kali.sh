@@ -233,7 +233,7 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
       echo -ne '###################(100%)\r'
       echo -ne '\n'
     sleep 1
-   apt clean && apt update && apt upgrade
+   apt clean && apt update && apt upgrade && && apt autoremove && apt dist-upgrade 
 else
     echo "You can clean and upgrading the system later.."
     sleep 1
