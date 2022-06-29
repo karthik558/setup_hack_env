@@ -23,7 +23,7 @@ apt install linux-headers-$(uname -r)
 apt install dkms && sudo rmmod r8188eu.ko
 
 # 4 CLone the driver from github
-git clone https://github.com/aircrack-ng/rtl8188eus && cd rtl8188eus
+git clone https://github.com/karthik558/rtl8188eus && cd rtl8188eus
 
 # 5 Blacklist the old driver ( if you have one )
 sudo -i echo "blacklist r8188eu" > "/etc/modprobe.d/realtek.conf"
