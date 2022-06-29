@@ -22,10 +22,13 @@ apt update && apt upgrade &&  apt install bc && apt-get install build-essential 
 # check if the folder exists or not 
 if [ ! -d "./rtl8188eus" ]; then
    echo "Cloning the driver from github"
-   git clone https://github.com/aircrack-ng/rtl8188eus && cd rtl8188eus
+   git clone https://github.com/karthik558/rtl8188eus && cd rtl8188eus
 else 
    echo "Driver already cloned"
 fi
+
+# Get into the directory first to compile driver
+cd rtl8188eus
 
 # Lets start compiling the driver
 echo "Compiling the driver"
