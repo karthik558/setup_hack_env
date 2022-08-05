@@ -199,7 +199,11 @@ sudo apt install netdiscover
 ## 27. whoami-project
 git clone https://github.com/owerdogan/whoami-project
 cd whoami-project
-sudo make installg
+sudo make install
+cd ..
+## 28. Any-Apk
+git clone https://github.com/kinghacker0/Any-Apk
+cd Any-Apk
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
