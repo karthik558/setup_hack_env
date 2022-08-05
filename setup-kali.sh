@@ -29,6 +29,7 @@ apt install aptitude
 aptitude install libssl-dev bc
 apt install build-essential libssl-dev libffi-dev
 apt install libssl-dev libffi-dev build-essential
+apt install tar tor curl python3 python3-scapy network-manager
 # Dependencies for system fetch
 echo "You sure you want to install system fetch? (y/n)"
 read -r answer
@@ -195,6 +196,10 @@ git clone https://github.com/karthik558/CREATE-MITM-AP
 sudo apt install mdk3
 ## 26. Netdiscover (Netdiscover is an active/passive address reconnaissance tool, mainly developed for those wireless networks without dhcp server, when you are wardriving. It can be also used on hub/switched networks.)
 sudo apt install netdiscover
+## 27. whoami-project
+git clone https://github.com/owerdogan/whoami-project
+cd whoami-project
+sudo make installg
 ## Tool cloning ends here
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
