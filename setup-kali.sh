@@ -1,17 +1,17 @@
 #!/bin/bash
 
 # Abort if its not running on root
-   echo "Checking if you are running this script on su mode or not"
+echo "Checking if you are running this script on su mode or not"
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
    sleep 1
    exit
-else 
+else
    echo "You are running this script on su mode"
    sleep 1
 fi
 # Abort if not running on Kali Linux
-   echo "Checking if you are running this script on Kali Linux or not"
+echo "Checking if you are running this script on Kali Linux or not"
 if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
    sleep 1
    echo "You are running this script on KALI LINUX"
@@ -25,6 +25,7 @@ cd .. && mkdir -p Tools && cd Tools
 # Update the system
 apt update
 # Dependencies for kali desktop environment
+apt install terminator
 apt install aptitude
 aptitude install libssl-dev bc
 apt install build-essential libssl-dev libffi-dev
@@ -35,23 +36,23 @@ echo "You sure you want to install system fetch? (y/n)"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-      echo "Installing system fetch"
-      echo -ne '####           (20%)\r'
-      sleep 1
-      echo -ne '########       (40%)\r'
-      sleep 2
-      echo -ne '############   (60%)\r'
-      sleep 3
-      echo -ne '################ (80%)\r'
-      sleep 4
-      echo -ne '###################(100%)\r'
-      echo -ne '\n'
-      apt install neofetch;
-      echo "installing htop"
-      apt install htop;
+   echo "Installing system fetch"
+   echo -ne '####           (20%)\r'
+   sleep 1
+   echo -ne '########       (40%)\r'
+   sleep 2
+   echo -ne '############   (60%)\r'
+   sleep 3
+   echo -ne '################ (80%)\r'
+   sleep 4
+   echo -ne '###################(100%)\r'
+   echo -ne '\n'
+   apt install neofetch
+   echo "installing htop"
+   apt install htop
 else
-      echo "Skipped installing system fetch"
-      sleep 1
+   echo "Skipped installing system fetch"
+   sleep 1
 fi
 # Python3 Dependencies
 apt install python3-venv
@@ -78,21 +79,23 @@ echo "Do you want to clean and upgrade the system now ? (y/n)"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-        echo "Your KALI is now UPDATING.. & UPGRADING.."
-        echo -ne '####           (20%)\r'
-         sleep 1
-         echo -ne '########       (40%)\r'
-         sleep 2
-         echo -ne '############   (60%)\r'
-         sleep 3
-         echo -ne '################ (80%)\r'
-         sleep 4
-         echo -ne '###################(100%)\r'
-         echo -ne '\n'
-        apt clean; apt update; apt upgrade;
+   echo "Your KALI is now UPDATING.. & UPGRADING.."
+   echo -ne '####           (20%)\r'
+   sleep 1
+   echo -ne '########       (40%)\r'
+   sleep 2
+   echo -ne '############   (60%)\r'
+   sleep 3
+   echo -ne '################ (80%)\r'
+   sleep 4
+   echo -ne '###################(100%)\r'
+   echo -ne '\n'
+   apt clean
+   apt update
+   apt upgrade
 else
-        echo "Upgrade later"
-        sleep 1
+   echo "Upgrade later"
+   sleep 1
 fi
 # Lets start cloning tools now
 # 1. Phoneinfoga (Information gathering & OSINT framework for phone numbers)
@@ -154,6 +157,9 @@ git clone https://github.com/techchipnet/CamPhish
 # 15. Mobile Security Framework (Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.)
 # This tool is just cloned , but we need to install it manually. (cuz of internet connection issues)
 git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF
+cd Mobile-Security-Framework-MobSF
+sudo ./setup.sh
+cd ..
 # 16. Privacy Must Be Protected (PIMP)
 # TOR Browser is not available on Kali Linux by default so lets install it manually.
 apt install tor torbrowser-launcher #(https://www.torproject.org/download/download.html.en)
@@ -212,41 +218,41 @@ echo "Do you want to download and install custom GRUB theme now ? (y/n)"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '####           (20%)\r'
-      sleep 1
-      echo -ne '########       (40%)\r'
-      sleep 2
-      echo -ne '############   (60%)\r'
-      sleep 3
-      echo -ne '################ (80%)\r'
-      sleep 4
-      echo -ne '###################(100%)\r'
-      echo -ne '\n'
+   sleep 1
+   echo -ne '########       (40%)\r'
+   sleep 2
+   echo -ne '############   (60%)\r'
+   sleep 3
+   echo -ne '################ (80%)\r'
+   sleep 4
+   echo -ne '###################(100%)\r'
+   echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
 else
-    echo "You can download and install custom GRUB theme later"
-    sleep 1
+   echo "You can download and install custom GRUB theme later"
+   sleep 1
 fi
 # Lets clean and upgrade the system one more time
 echo "Let's do some house keeping on your system ? (y/n)"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-    echo "Cleaning and upgrading the system now.."
-    echo -ne '####           (20%)\r'
-      sleep 1
-      echo -ne '########       (40%)\r'
-      sleep 2
-      echo -ne '############   (60%)\r'
-      sleep 3
-      echo -ne '################ (80%)\r'
-      sleep 4
-      echo -ne '###################(100%)\r'
-      echo -ne '\n'
-    sleep 1
+   echo "Cleaning and upgrading the system now.."
+   echo -ne '####           (20%)\r'
+   sleep 1
+   echo -ne '########       (40%)\r'
+   sleep 2
+   echo -ne '############   (60%)\r'
+   sleep 3
+   echo -ne '################ (80%)\r'
+   sleep 4
+   echo -ne '###################(100%)\r'
+   echo -ne '\n'
+   sleep 1
    apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
 else
-    echo "You can clean and upgrading the system later.."
-    sleep 1
+   echo "You can clean and upgrading the system later.."
+   sleep 1
 fi
 # Lets end this here by saying that we are done with Kali-env setup.
 echo "Setting up your hacking machine is completed successfully."
@@ -267,7 +273,7 @@ exit
 ## TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
 ## USE AT YOUR OWN RISK.
 ## LICESNSE: GNU GENERAL PUBLIC LICENSE V3.0
-## OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION 
+## OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION
 ## https://www.gnu.org/licenses/gpl-3.0.en.html
 ## HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
 ##========================================================================================================================##
@@ -285,8 +291,19 @@ exit
 ### Run this command : sudo update-grub && sudo grub-mkconfig -o /boot/grub/grub.cfg && sudo reboot.
 ### <=== Fix permission issue after running this script. ===>
 ### chown -R username: /home/username (username is your username) eg: chown -R root: /home/root (This will change the permission of /home/root folder to root user)
+### In case you get any error while logging in to your kali linux desktop environment , you can use this command to fix the issue : sudo dpkg --configure -a (ctrl + alt + f1/f2) and then login to your kali linux -> sudo apt-get update && sudo apt-ger upgrade -> and type the command sudo dpkg --configure -a and press enter. This will fix the issue. Then Restart your kali linux.
+### sudo chown -R kali home/kali (This will change the permission of /home/kali folder to kali user) (kali is your username)
 ### <=== Change ZSH shell to bash shell after running this script. ===>
 ### chsh -s /bin/bash (This will change the default shell to bash)
+#------------#
+### For configuring the proxychains, Do the following steps:
+### 1. Open the file sudo nano /etc/proxychains4.conf in a text editor.
+### 2. Comment the line strict_chain and Uncomment the line dynamic_chain.
+### 3. Add the socks proxy to the file to the end of the file. [socks5  127.0.0.1 9050]
+### 4. Save the file and exit.
+### 5. service tor start && service tor status
+### 6. proxychains wwww.duckduckgo.com (for testing if the proxychains is working or not)
+#------------#
 ### THANKS FOR USING THIS SCRIPT.
 ### WE ARE HAPPY TO HAVE YOU ON OUR TEAM.
 ### WE ARE ALWAYS HERE TO HELP YOU (JUST RAISE A ISSUE ON GITHUB IF YOU HAVE ISSUE WITH THIS SCRIPT).
