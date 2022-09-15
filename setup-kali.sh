@@ -10,25 +10,30 @@ CYAN='\033[0;36m'
 BLACK='\033[0;30m'
 NC='\033[0m' # No Color
 
-# Run the script only after typing the password {kali/KALI}
+# Print password
+printf "${RED}Please remember the password shown on next line.${NC}"
+printf "${RED} Password: KALI/ROOT/kali/root${NC}"
+clear
+
+# Run the script only after typing the password {kali/KALI/root/ROOT}
 echo -e "${RED}Enter the password to run the script${NC}"
 read -s password
 
-if [ $password == "kali" ] || [ $password == "KALI" ]; then
-    echo -e "${GREEN}Password is correct${NC}"
+if [ $password == "kali" ] || [ $password == "KALI" ] || [ $password == "root" ] || [ $password == "ROOT" ]; then
+   echo -e "${GREEN}Password is correct${NC}"
 else
-    echo -e "${RED}Password is incorrect${NC}"
-    exit 1
+   echo -e "${RED}Password is incorrect${NC}"
+   exit 1
 fi
 
 #  █████   ████   █████████   █████       █████            ██████████ ██████   █████ █████   █████
-# ░░███   ███░   ███░░░░░███ ░░███       ░░███            ░░███░░░░░█░░██████ ░░███ ░░███   ░░███ 
-#  ░███  ███    ░███    ░███  ░███        ░███             ░███  █ ░  ░███░███ ░███  ░███    ░███ 
-#  ░███████     ░███████████  ░███        ░███  ██████████ ░██████    ░███░░███░███  ░███    ░███ 
-#  ░███░░███    ░███░░░░░███  ░███        ░███ ░░░░░░░░░░  ░███░░█    ░███ ░░██████  ░░███   ███  
-#  ░███ ░░███   ░███    ░███  ░███      █ ░███             ░███ ░   █ ░███  ░░█████   ░░░█████░   
-#  █████ ░░████ █████   █████ ███████████ █████            ██████████ █████  ░░█████    ░░███     
-# ░░░░░   ░░░░ ░░░░░   ░░░░░ ░░░░░░░░░░░ ░░░░░            ░░░░░░░░░░ ░░░░░    ░░░░░      ░░░      
+# ░░███   ███░   ███░░░░░███ ░░███       ░░███            ░░███░░░░░█░░██████ ░░███ ░░███   ░░███
+#  ░███  ███    ░███    ░███  ░███        ░███             ░███  █ ░  ░███░███ ░███  ░███    ░███
+#  ░███████     ░███████████  ░███        ░███  ██████████ ░██████    ░███░░███░███  ░███    ░███
+#  ░███░░███    ░███░░░░░███  ░███        ░███ ░░░░░░░░░░  ░███░░█    ░███ ░░██████  ░░███   ███
+#  ░███ ░░███   ░███    ░███  ░███      █ ░███             ░███ ░   █ ░███  ░░█████   ░░░█████░
+#  █████ ░░████ █████   █████ ███████████ █████            ██████████ █████  ░░█████    ░░███
+# ░░░░░   ░░░░ ░░░░░   ░░░░░ ░░░░░░░░░░░ ░░░░░            ░░░░░░░░░░ ░░░░░    ░░░░░      ░░░
 
 # Abort if its not running on root
 echo "Checking if you are running this script on su mode or not"
@@ -50,10 +55,28 @@ else
    printf "${RED}This script must be run on Kali Linux${NC}"
    exit
 fi
+# Check if the script is already running or not
+echo "Checking if the script is already running or not"
+if [[ -f /tmp/.setup-kali.lock ]]; then
+   printf "${RED}The script is already running${NC}"
+   exit
+else
+   printf "${GREEN}The script is not running${NC}"
+   sleep 1
+fi
+
+# Pulling the latest changes from the repository
+printf "${YELLOW}Fetching the repository and pulling the latest changes from the repository${NC}"
+git fetch https://github.com/karthik558/setup_kali_env.git && git pull https://github.com/karthik558/setup_kali_env.git
+sleep 1
+
 # Create a directory for the tools and enter into it
+printf "${YELLOW}Creating a directory for clonning the tools and entering into it${NC}"
 cd .. && mkdir -p Tools && cd Tools
+
 # Update the system
 apt update
+
 # Dependencies for kali desktop environment
 apt install terminator
 apt install aptitude
@@ -61,21 +84,22 @@ aptitude install libssl-dev bc
 apt install build-essential libssl-dev libffi-dev
 apt install libssl-dev libffi-dev build-essential
 apt install tar tor curl python3 python3-scapy network-manager
+
 # Dependencies for system fetch
 printf "${BLUE}You sure you want to install SYSTEM_FETCH and HTOP? (y/n)${NC}"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${GREEN}Installing system fetch${NC}"
-   echo -ne '####           (20%)\r'
+   echo -ne '/\/\          (20%)\r'
    sleep 1
-   echo -ne '########       (40%)\r'
+   echo -ne '/\/\/\/\        (40%)\r'
    sleep 2
-   echo -ne '############   (60%)\r'
+   echo -ne '/\/\/\/\/\/\      (60%)\r'
    sleep 3
-   echo -ne '################ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
    sleep 4
-   echo -ne '###################(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
    echo -ne '\n'
    apt install neofetch
    printf "${blue}Installing HTOP${NC}"
@@ -84,6 +108,7 @@ else
    echo "${RED}Skipped installing SYSTEM_FETCH and HTOP${NC}"
    sleep 1
 fi
+
 # Python3 Dependencies
 apt install python3-venv
 apt install python3-pip
@@ -91,6 +116,7 @@ apt install python3-pip php php-cli
 apt install python3-pyqt5 hostapd
 python3 -m venv venv
 pip install pipenv
+
 # Metasploit Dependencies
 apt install zipalign apksigner
 apt install openjdk-11-jdk
@@ -99,6 +125,8 @@ apt install apktool #https://ibotpeaches.github.io/Apktool/install/ (Download wr
 jarsigner
 # Unzip the default kali wordlist and remote the tar.gz file
 gzip -d /usr/share/wordlists/rockyou.txt.gz
+
+## Clone the tools from the repository starts here
 # Fix update/upgrade slow issue on Kali Linux (Kali Mirrorscript-v2 by IceM4nn automatically select the best kali mirror server and apply the configuration)
 git clone https://github.com/Ethical-Hacking-Tools/mirrorscript-v2
 cd mirrorscript-v2
@@ -110,15 +138,15 @@ read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}"
-   echo -ne '####           (20%)\r'
+   echo -ne '/\/\          (20%)\r'
    sleep 1
-   echo -ne '########       (40%)\r'
+   echo -ne '/\/\/\/\        (40%)\r'
    sleep 2
-   echo -ne '############   (60%)\r'
+   echo -ne '/\/\/\/\/\/\      (60%)\r'
    sleep 3
-   echo -ne '################ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
    sleep 4
-   echo -ne '###################(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
    echo -ne '\n'
    apt clean
    apt update
@@ -241,21 +269,23 @@ cd ..
 git clone https://github.com/kinghacker0/Any-Apk
 cd Any-Apk
 ## Tool cloning ends here
+
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
+
 # Lets download GRUB Theme for Kali Linux
 printf "${RED}Do you want to download and install custom GRUB theme now ? (y/n)${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo -ne '/\/\           (20%)\r'
+   echo -ne '/\/\          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\       (40%)\r'
+   echo -ne '/\/\/\/\        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\   (60%)\r'
+   echo -ne '/\/\/\/\/\/\      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
    echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
@@ -263,20 +293,21 @@ else
    printf "${RED}You can download and install custom GRUB theme later by running this script again.${NC}"
    sleep 1
 fi
+
 # Lets clean and upgrade the system one more time
 printf "${YELLOW}Let's do some house keeping on your system ? (y/n) ${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${RED}Cleaning and upgrading the system now.. ${NC}"
-   echo -ne '/\/\           (20%)\r'
+   echo -ne '/\/\          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\       (40%)\r'
+   echo -ne '/\/\/\/\        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\   (60%)\r'
+   echo -ne '/\/\/\/\/\/\      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
    echo -ne '\n'
    sleep 1
    apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
@@ -284,73 +315,104 @@ else
    printf "${YELLOW}You can clean and upgrading the system later.. ${NC}"
    sleep 1
 fi
+
 # Lets end this here by saying that we are done with Kali-env setup.
 printf "${GREEN}Setting up your hacking machine is completed successfully. ${NC}"
 printf "${RED}Now reboot your Kali Linux and enjoy your hacking experience. ${NC}"
 printf "${YELLOW}Thanks for using my setup-kali script. ${NC}"
 printf "${BLUE}Please visit https://github.com/karthik558 and star my repositories if you like them. ${NC}"
 printf "${CYAN}For any queries contact me through email : karthiklal@duck.com ${NC}"
-printf "${BLACK}. ${NC}"
-printf "${GREEN}"
-printf "${GREEN}"
-printf "${GREEN}__    __       ___      .______   .______   ____    ____     __    __       ___       ______  __  ___  __  .__   __.   _______  "
-printf "${GREEN}|  |  |  |     /   \     |   _  \  |   _  \  \   \  /   /    |  |  |  |     /   \     /      ||  |/  / |  | |  \ |  |  /  _____|"
-printf "${GREEN}|  |__|  |    /  ^  \    |  |_)  | |  |_)  |  \   \/   /     |  |__|  |    /  ^  \   |  ,----'|  '  /  |  | |   \|  | |  |  __  "
-printf "${GREEN}|   __   |   /  /_\  \   |   ___/  |   ___/    \_    _/      |   __   |   /  /_\  \  |  |     |    <   |  | |  . -  | |  | |_ | "
-printf "${GREEN}|  |  |  |  /  _____  \  |  |      |  |          |  |        |  |  |  |  /  _____  \ |  \----.|  .  \  |  | |  |\   | |__| |  | "
-printf "${GREEN}|__|  |__| /__/     \__\ | _|      | _|          |__|        |__|  |__| /__/     \__\ \______||__|\__\ |__| |__| \__|  \______| "
-printf "${GREEN}"
-printf "${GREEN}"
-printf "${BLACK}. ${NC}"
-printf "${GREEN}HAPPY HACKING.....${NC}"
-sleep 2
-exit
 
-# House keeping and script ends here.
-##========================================================================================================================##
-## KALI DESKTOP ENVIRONMENT SETUP SCRIPT
-## AUTHOR: KARTHIK LAL (karthik558)
-## DATE:   07.11.2021
-## CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
-## TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
-## USE AT YOUR OWN RISK.
-## LICESNSE: GNU GENERAL PUBLIC LICENSE V3.0
-## OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION
-## https://www.gnu.org/licenses/gpl-3.0.en.html
-## HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
-##========================================================================================================================##
-### NOTE/WARNING :
-### IMPORTANT NOTE : Please do not run this script again , if you have already run this script once.
-### This script will take a lot of time to run.
-### <=== FONT FIXING FOR KALI LINUX ===>
-### For fixing the font issue , download the full font file from this link http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
-### And extract it in /usr/local/share/fonts or /usr/share/fonts folder.
-### <=== FIX GRUB RESOLUTION AND THEME FIX AFTER INSTALLING CUSTOM THEME OR FOR CHANGING THE RESOLTION OF DEFAULT KALI GRUB ===>
-### New bug on kali-linux (windows partition is not showing on grub after updating and upgrading system) -> FIX GRUB_DISABLE_OS_PROBER=false add on /etc/default/grub
-### /etc/default/grub.d folder is used to change the resolution of default Kali GRUB.
-### For changing the resolution of default Kali GRUB , you can use this command : sudo nano /etc/default/grub.d/20-custom.cfg
-### Change the resolution of default Kali GRUB to your liking.
-### Run this command : sudo update-grub && sudo grub-mkconfig -o /boot/grub/grub.cfg && sudo reboot.
-### <=== Fix permission issue after running this script. ===>
-### chown -R username: /home/username (username is your username) eg: chown -R root: /home/root (This will change the permission of /home/root folder to root user)
-### In case you get any error while logging in to your kali linux desktop environment , you can use this command to fix the issue : sudo dpkg --configure -a (ctrl + alt + f1/f2) and then login to your kali linux -> sudo apt-get update && sudo apt-ger upgrade -> and type the command sudo dpkg --configure -a and press enter. This will fix the issue. Then Restart your kali linux.
-### sudo chown -R kali home/kali (This will change the permission of /home/kali folder to kali user) (kali is your username)
-### <=== Change ZSH shell to bash shell after running this script. ===>
-### chsh -s /bin/bash (This will change the default shell to bash)
-#------------#
-### For configuring the proxychains, Do the following steps:
-### 1. Open the file sudo nano /etc/proxychains4.conf in a text editor.
-### 2. Comment the line strict_chain and Uncomment the line dynamic_chain.
-### 3. Add the socks proxy to the file to the end of the file. [socks5  127.0.0.1 9050]
-### 4. Save the file and exit.
-### 5. service tor start && service tor status
-### 6. proxychains wwww.duckduckgo.com (for testing if the proxychains is working or not)
-#------------#
-### THANKS FOR USING THIS SCRIPT.
-### WE ARE HAPPY TO HAVE YOU ON OUR TEAM.
-### WE ARE ALWAYS HERE TO HELP YOU (JUST RAISE A ISSUE ON GITHUB IF YOU HAVE ISSUE WITH THIS SCRIPT).
-### CODED BY : KARTHIK LAL
-### WEBSITE : https://karthik558.tk
-### EMAIL : karthik.lal558@gmail.com
-### GITHUB : karthik558
-### CONTRIBUTIONS ARE WELCOME. :)
+# '##::::'##::::'###::::'########::'########::'##:::'##::::'##::::'##::::'###:::::'######::'##:::'##:'####:'##::: ##::'######:::
+#  ##:::: ##:::'## ##::: ##.... ##: ##.... ##:. ##:'##::::: ##:::: ##:::'## ##:::'##... ##: ##::'##::. ##:: ###:: ##:'##... ##::
+#  ##:::: ##::'##:. ##:: ##:::: ##: ##:::: ##::. ####:::::: ##:::: ##::'##:. ##:: ##:::..:: ##:'##:::: ##:: ####: ##: ##:::..:::
+#  #########:'##:::. ##: ########:: ########::::. ##::::::: #########:'##:::. ##: ##::::::: #####::::: ##:: ## ## ##: ##::'####:
+#  ##.... ##: #########: ##.....::: ##.....:::::: ##::::::: ##.... ##: #########: ##::::::: ##. ##:::: ##:: ##. ####: ##::: ##::
+#  ##:::: ##: ##.... ##: ##:::::::: ##::::::::::: ##::::::: ##:::: ##: ##.... ##: ##::: ##: ##:. ##::: ##:: ##:. ###: ##::: ##::
+#  ##:::: ##: ##:::: ##: ##:::::::: ##::::::::::: ##::::::: ##:::: ##: ##:::: ##:. ######:: ##::. ##:'####: ##::. ##:. ######:::
+# ..:::::..::..:::::..::..:::::::::..::::::::::::..::::::::..:::::..::..:::::..:::......:::..::::..::....::..::::..:::......::::
+
+# Print final message/greetings to the $USER
+printf "${GREEN}HAPPY HACKING PEOPLES.....${NC}"
+sleep 2
+clear
+
+# Information about the bugs/issues after using this script
+printf "${RED} PLEASE READ THE BRIEF ABOUT THIS SCRIPT UNDER (setup-kali.sh) (#query%Brief&about%this%script${NC}"
+printf "${GREEN} IF YOU FIND ANY BUGS OR ISSUES PLEASE REPORT TO ME THROUGH EMAIL : karthiklal@duck.com"
+
+# Print Good Morning/Afternoon/Evening/Night message depending on the time of the day
+if [[ $(date +%H) -ge 0 && $(date +%H) -lt 12 ]]; then
+   printf "${GREEN}Good Morning, Have a Nice Day :) ${NC}"
+elif [[ $(date +%H) -ge 12 && $(date +%H) -lt 16 ]]; then
+   printf "${GREEN}Good Afternoon, Had your lunch? :-* ${NC}"
+elif [[ $(date +%H) -ge 16 && $(date +%H) -lt 20 ]]; then
+   printf "${GREEN}Good Evening, Had tea?  ;-) ${NC}"
+else
+   printf "${GREEN}Good Night, Sweet Dreams :-) ${NC}"
+fi
+sleep 2
+
+# Wait for user input before closing the terminal
+printf "${RED}Press any key to exit the terminal...${NC}"
+read -r -n 1 -s
+exit 0
+# SCRIPT ENDS HERE
+
+## Brief about this script >>.
+## Author/Developer Information >>.
+## License Information >>.
+##
+# ├── KALI DESKTOP ENVIRONMENT SETUP SCRIPT
+# ├── AUTHOR: KARTHIK LAL (https://github.com/karthik558) (https://karthiklal.live)
+# ├── DATE:   07.11.2021
+# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
+# ├── TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
+# ├── USE AT YOUR OWN RISK.
+# ├── LICENSE: GNU GENERAL PUBLIC LICENSE V3.0
+# ├── OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION
+# ├── https://www.gnu.org/licenses/gpl-3.0.en.html
+# └── HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
+
+## Basic script usage issues >>.
+## Bugs and issues after running this script >>.
+## How to fix them >>.
+##
+# ├── IMPORTANT NOTE : Please do not run this script again , if you have already run this script once.
+# ├── This script will take a lot of time to run.
+# ├── <=== FONT FIXING FOR KALI LINUX ===>
+# ├── For fixing the font issue , download the full font file from this link http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
+# ├── And extract it in /usr/local/share/fonts or /usr/share/fonts folder.
+# ├── <=== FIX GRUB RESOLUTION AND THEME FIX AFTER INSTALLING CUSTOM THEME OR FOR CHANGING THE RESOLTION OF DEFAULT KALI GRUB ===>
+# ├── New bug on kali-linux (windows partition is not showing on grub after updating and upgrading system) -> FIX GRUB_DISABLE_OS_PROBER=false add on /etc/default/grub
+# ├── /etc/default/grub.d folder is used to change the resolution of default Kali GRUB.
+# ├── For changing the resolution of default Kali GRUB , you can use this command : sudo nano /etc/default/grub.d/20-custom.cfg
+# ├── Change the resolution of default Kali GRUB to your liking.
+# ├── Run this command : sudo update-grub && sudo grub-mkconfig -o /boot/grub/grub.cfg && sudo reboot.
+# ├── <=== Fix permission issue after running this script. ===>
+# ├── chown -R username: /home/username (username is your username) eg: chown -R root: /home/root (This will change the permission of /home/root folder to root user)
+# ├── In case you get any error while logging in to your kali linux desktop environment , you can use this command to fix the issue : sudo dpkg --configure -a (ctrl + alt + f1/f2) and then login to your kali linux -> sudo apt-get update && sudo apt-ger upgrade -> and type the command sudo dpkg --configure -a and press enter. This will fix the issue. Then Restart your kali linux.
+# ├── sudo chown -R kali home/kali (This will change the permission of /home/kali folder to kali user) (kali is your username)
+# ├── <=== Change ZSH shell to bash shell after running this script. ===>
+# └── chsh -s /bin/bash (This will change the default shell to bash)
+
+## Configure Proxychains for using proxychains with kali linux >>.
+##
+# ├── For configuring the proxychains, Do the following steps:
+# ├── 1. Open the file sudo nano /etc/proxychains4.conf in a text editor.
+# ├── 2. Comment the line strict_chain and Uncomment the line dynamic_chain.
+# ├── 3. Add the socks proxy to the file to the end of the file. [socks5  127.0.0.1 9050]
+# ├── 4. Save the file and exit.
+# ├── 5. service tor start && service tor status
+# └── 6. proxychains wwww.duckduckgo.com (for testing if the proxychains is working or not)
+
+## Declaration for using my script >>.
+##
+# ├── THANKS FOR USING THIS SCRIPT.
+# ├── WE ARE HAPPY TO HAVE YOU ON OUR TEAM.
+# ├── WE ARE ALWAYS HERE TO HELP YOU (JUST RAISE A ISSUE ON GITHUB IF YOU HAVE ISSUE WITH THIS SCRIPT).
+# ├── THIS CODE IS WRITTEN BY : KARTHIK LAL (karthiklal@duck.com/karthiklal.live)
+# ├── WEBSITE : https://karthiklal.live
+# ├── EMAIL : karthik.lal558@gmail.com/karthiklal@duck.com
+# ├── GITHUB : karthik558
+# └── CONTRIBUTIONS ARE WELCOME. :)
