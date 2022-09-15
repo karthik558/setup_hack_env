@@ -1,23 +1,53 @@
 #!/bin/bash
 
+# Select the color of the text in the terminal
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+VIOLET='\033[0;35m'
+CYAN='\033[0;36m'
+BLACK='\033[0;30m'
+NC='\033[0m' # No Color
+
+# Run the script only after typing the password {kali/KALI}
+echo -e "${RED}Enter the password to run the script${NC}"
+read -s password
+
+if [ $password == "kali" ] || [ $password == "KALI" ]; then
+    echo -e "${GREEN}Password is correct${NC}"
+else
+    echo -e "${RED}Password is incorrect${NC}"
+    exit 1
+fi
+
+#  █████   ████   █████████   █████       █████            ██████████ ██████   █████ █████   █████
+# ░░███   ███░   ███░░░░░███ ░░███       ░░███            ░░███░░░░░█░░██████ ░░███ ░░███   ░░███ 
+#  ░███  ███    ░███    ░███  ░███        ░███             ░███  █ ░  ░███░███ ░███  ░███    ░███ 
+#  ░███████     ░███████████  ░███        ░███  ██████████ ░██████    ░███░░███░███  ░███    ░███ 
+#  ░███░░███    ░███░░░░░███  ░███        ░███ ░░░░░░░░░░  ░███░░█    ░███ ░░██████  ░░███   ███  
+#  ░███ ░░███   ░███    ░███  ░███      █ ░███             ░███ ░   █ ░███  ░░█████   ░░░█████░   
+#  █████ ░░████ █████   █████ ███████████ █████            ██████████ █████  ░░█████    ░░███     
+# ░░░░░   ░░░░ ░░░░░   ░░░░░ ░░░░░░░░░░░ ░░░░░            ░░░░░░░░░░ ░░░░░    ░░░░░      ░░░      
+
 # Abort if its not running on root
 echo "Checking if you are running this script on su mode or not"
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root"
+   printf "${RED}This script must be run as root${NC}"
    sleep 1
    exit
 else
-   echo "You are running this script on su mode"
+   printf "${GREEN}You are running this script on su mode${NC}"
    sleep 1
 fi
 # Abort if not running on Kali Linux
 echo "Checking if you are running this script on Kali Linux or not"
 if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
    sleep 1
-   echo "You are running this script on KALI LINUX"
+   printf "${GREEN}You are running this script on Kali Linux${NC}"
    clear
 else
-   echo "You are not running this script on KALI LINUX"
+   printf "${RED}This script must be run on Kali Linux${NC}"
    exit
 fi
 # Create a directory for the tools and enter into it
@@ -32,11 +62,11 @@ apt install build-essential libssl-dev libffi-dev
 apt install libssl-dev libffi-dev build-essential
 apt install tar tor curl python3 python3-scapy network-manager
 # Dependencies for system fetch
-echo "You sure you want to install system fetch? (y/n)"
+printf "${BLUE}You sure you want to install SYSTEM_FETCH and HTOP? (y/n)${NC}"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo "Installing system fetch"
+   printf "${GREEN}Installing system fetch${NC}"
    echo -ne '####           (20%)\r'
    sleep 1
    echo -ne '########       (40%)\r'
@@ -48,10 +78,10 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '###################(100%)\r'
    echo -ne '\n'
    apt install neofetch
-   echo "installing htop"
+   printf "${blue}Installing HTOP${NC}"
    apt install htop
 else
-   echo "Skipped installing system fetch"
+   echo "${RED}Skipped installing SYSTEM_FETCH and HTOP${NC}"
    sleep 1
 fi
 # Python3 Dependencies
@@ -75,11 +105,11 @@ cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
 cd ..
 # Clean, update and upgrade your kali-machine
-echo "Do you want to clean and upgrade the system now ? (y/n)"
+printf "${GREEN}Do you want to clean and upgrade the system now ? (y/n)${NC}"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo "Your KALI is now UPDATING.. & UPGRADING.."
+   printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}"
    echo -ne '####           (20%)\r'
    sleep 1
    echo -ne '########       (40%)\r'
@@ -94,7 +124,7 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    apt update
    apt upgrade
 else
-   echo "Upgrade later"
+   printf "${GREEN}UPGRADE LATER${NC}"
    sleep 1
 fi
 # Lets start cloning tools now
@@ -214,54 +244,66 @@ cd Any-Apk
 # Lets start downloading/setup kali-env dependencies now.
 pwd && ls -l
 # Lets download GRUB Theme for Kali Linux
-echo "Do you want to download and install custom GRUB theme now ? (y/n)"
+printf "${RED}Do you want to download and install custom GRUB theme now ? (y/n)${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo -ne '####           (20%)\r'
+   echo -ne '/\/\           (20%)\r'
    sleep 1
-   echo -ne '########       (40%)\r'
+   echo -ne '/\/\/\/\       (40%)\r'
    sleep 2
-   echo -ne '############   (60%)\r'
+   echo -ne '/\/\/\/\/\/\   (60%)\r'
    sleep 3
-   echo -ne '################ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\ (80%)\r'
    sleep 4
-   echo -ne '###################(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\(100%)\r'
    echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
 else
-   echo "You can download and install custom GRUB theme later"
+   printf "${RED}You can download and install custom GRUB theme later by running this script again.${NC}"
    sleep 1
 fi
 # Lets clean and upgrade the system one more time
-echo "Let's do some house keeping on your system ? (y/n)"
+printf "${YELLOW}Let's do some house keeping on your system ? (y/n) ${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo "Cleaning and upgrading the system now.."
-   echo -ne '####           (20%)\r'
+   printf "${RED}Cleaning and upgrading the system now.. ${NC}"
+   echo -ne '/\/\           (20%)\r'
    sleep 1
-   echo -ne '########       (40%)\r'
+   echo -ne '/\/\/\/\       (40%)\r'
    sleep 2
-   echo -ne '############   (60%)\r'
+   echo -ne '/\/\/\/\/\/\   (60%)\r'
    sleep 3
-   echo -ne '################ (80%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\ (80%)\r'
    sleep 4
-   echo -ne '###################(100%)\r'
+   echo -ne '/\/\/\/\/\/\/\/\/\/\(100%)\r'
    echo -ne '\n'
    sleep 1
    apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
 else
-   echo "You can clean and upgrading the system later.."
+   printf "${YELLOW}You can clean and upgrading the system later.. ${NC}"
    sleep 1
 fi
 # Lets end this here by saying that we are done with Kali-env setup.
-echo "Setting up your hacking machine is completed successfully."
-echo "Now reboot your Kali Linux and enjoy your hacking experience."
-echo "Thanks for using my setup-kali script."
-echo "Visit https://github.com/karthik558"
-echo "For any queries contact me through email : karthik.lal558@gmail.com"
-echo "Happy Hacking.."
-sleep 1
+printf "${GREEN}Setting up your hacking machine is completed successfully. ${NC}"
+printf "${RED}Now reboot your Kali Linux and enjoy your hacking experience. ${NC}"
+printf "${YELLOW}Thanks for using my setup-kali script. ${NC}"
+printf "${BLUE}Please visit https://github.com/karthik558 and star my repositories if you like them. ${NC}"
+printf "${CYAN}For any queries contact me through email : karthiklal@duck.com ${NC}"
+printf "${BLACK}. ${NC}"
+printf "${GREEN}"
+printf "${GREEN}"
+printf "${GREEN}__    __       ___      .______   .______   ____    ____     __    __       ___       ______  __  ___  __  .__   __.   _______  "
+printf "${GREEN}|  |  |  |     /   \     |   _  \  |   _  \  \   \  /   /    |  |  |  |     /   \     /      ||  |/  / |  | |  \ |  |  /  _____|"
+printf "${GREEN}|  |__|  |    /  ^  \    |  |_)  | |  |_)  |  \   \/   /     |  |__|  |    /  ^  \   |  ,----'|  '  /  |  | |   \|  | |  |  __  "
+printf "${GREEN}|   __   |   /  /_\  \   |   ___/  |   ___/    \_    _/      |   __   |   /  /_\  \  |  |     |    <   |  | |  . -  | |  | |_ | "
+printf "${GREEN}|  |  |  |  /  _____  \  |  |      |  |          |  |        |  |  |  |  /  _____  \ |  \----.|  .  \  |  | |  |\   | |__| |  | "
+printf "${GREEN}|__|  |__| /__/     \__\ | _|      | _|          |__|        |__|  |__| /__/     \__\ \______||__|\__\ |__| |__| \__|  \______| "
+printf "${GREEN}"
+printf "${GREEN}"
+printf "${BLACK}. ${NC}"
+printf "${GREEN}HAPPY HACKING.....${NC}"
+sleep 2
 exit
 
 # House keeping and script ends here.
