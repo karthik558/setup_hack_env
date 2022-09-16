@@ -3,10 +3,10 @@
 # Banner for the script
 # ██╗████████╗███████╗███████╗████████╗
 # ██║╚══██╔══╝██╔════╝██╔════╝╚══██╔══╝
-# ██║   ██║   █████╗  ███████╗   ██║   
-# ██║   ██║   ██╔══╝  ╚════██║   ██║   
-# ██║   ██║   ███████╗███████║   ██║   
-# ╚═╝   ╚═╝   ╚══════╝╚══════╝   ╚═╝   
+# ██║   ██║   █████╗  ███████╗   ██║
+# ██║   ██║   ██╔══╝  ╚════██║   ██║
+# ██║   ██║   ███████╗███████║   ██║
+# ╚═╝   ╚═╝   ╚══════╝╚══════╝   ╚═╝
 
 # Select the color of the text in the terminal
 RED='\033[0;31m'
@@ -46,7 +46,7 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
    echo -ne '\n'
    apt-get update && apt-get upgrade -y
-else 
+else
    printf "${RED}Skipping update and upgrade ${NC}"
 fi
 
@@ -84,9 +84,6 @@ fi
 # ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
 # ├── TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
 # ├── USE AT YOUR OWN RISK.
-# ├── LICENSE: GNU GENERAL PUBLIC LICENSE V3.0
-# ├── OPENSOURCE SOFTWARE LICENSE AGREEMENT FOR KALI LINUX DISTRIBUTION
-# ├── https://www.gnu.org/licenses/gpl-3.0.en.html
 # └── HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
 ##
 ## Script Information >>.
@@ -116,4 +113,4 @@ fi
 # ├── GITHUB : karthik558
 # └── CONTRIBUTIONS ARE WELCOME. :)
 ##
-## 
+##
