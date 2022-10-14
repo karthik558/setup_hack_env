@@ -91,15 +91,15 @@ read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${GREEN}Installing system fetch${NC}"
-   echo -ne '/\/\          (20%)\r'
+   echo -ne '**          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\        (40%)\r'
+   echo -ne '****        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\      (60%)\r'
+   echo -ne '******      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
+   echo -ne '********      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
+   echo -ne '**********   (100%)\r'
    echo -ne '\n'
    apt install neofetch
    printf "${blue}Installing HTOP${NC}"
@@ -138,15 +138,15 @@ read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}"
-   echo -ne '/\/\          (20%)\r'
+   echo -ne '**          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\        (40%)\r'
+   echo -ne '****        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\      (60%)\r'
+   echo -ne '******      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
+   echo -ne '********      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
+   echo -ne '**********   (100%)\r'
    echo -ne '\n'
    apt clean
    apt update
@@ -277,15 +277,15 @@ pwd && ls -l
 printf "${RED}Do you want to download and install custom GRUB theme now ? (y/n)${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   echo -ne '/\/\          (20%)\r'
+   echo -ne '**          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\        (40%)\r'
+   echo -ne '****        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\      (60%)\r'
+   echo -ne '******      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
+   echo -ne '********      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
+   echo -ne '**********   (100%)\r'
    echo -ne '\n'
    cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
@@ -299,15 +299,15 @@ printf "${YELLOW}Let's do some house keeping on your system ? (y/n) ${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    printf "${RED}Cleaning and upgrading the system now.. ${NC}"
-   echo -ne '/\/\          (20%)\r'
+   echo -ne '**          (20%)\r'
    sleep 1
-   echo -ne '/\/\/\/\        (40%)\r'
+   echo -ne '****        (40%)\r'
    sleep 2
-   echo -ne '/\/\/\/\/\/\      (60%)\r'
+   echo -ne '******      (60%)\r'
    sleep 3
-   echo -ne '/\/\/\/\/\/\/\/\      (80%)\r'
+   echo -ne '********      (80%)\r'
    sleep 4
-   echo -ne '/\/\/\/\/\/\/\/\/\/\   (100%)\r'
+   echo -ne '**********   (100%)\r'
    echo -ne '\n'
    sleep 1
    apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
