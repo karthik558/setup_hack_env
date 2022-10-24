@@ -10,21 +10,6 @@ CYAN='\033[0;36m'
 BLACK='\033[0;30m'
 NC='\033[0m' # No Color
 
-# Print password
-printf "${RED}Please remember the password shown on next line.${NC}"
-printf "${RED} Password: KALI/ROOT/kali/root${NC}"
-clear
-
-# Run the script only after typing the password {kali/KALI/root/ROOT}
-echo -e "${RED}Enter the password to run the script${NC}"
-read -s password
-
-if [ $password == "kali" ] || [ $password == "KALI" ] || [ $password == "root" ] || [ $password == "ROOT" ]; then
-   echo -e "${GREEN}Password is correct${NC}"
-else
-   echo -e "${RED}Password is incorrect${NC}"
-   exit 1
-fi
 
 #  █████   ████   █████████   █████       █████            ██████████ ██████   █████ █████   █████
 # ░░███   ███░   ███░░░░░███ ░░███       ░░███            ░░███░░░░░█░░██████ ░░███ ░░███   ░░███
@@ -38,41 +23,44 @@ fi
 # Abort if its not running on root
 echo "Checking if you are running this script on su mode or not"
 if [[ $EUID -ne 0 ]]; then
-   printf "${RED}This script must be run as root${NC}"
+   printf "${RED}This script must be run as root${NC}\n"
    sleep 1
    exit
 else
-   printf "${GREEN}You are running this script on su mode${NC}"
+   printf "${GREEN}You are running this script on su mode${NC}\n"
    sleep 1
+   clear
 fi
 # Abort if not running on Kali Linux
 echo "Checking if you are running this script on Kali Linux or not"
 if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
    sleep 1
-   printf "${GREEN}You are running this script on Kali Linux${NC}"
+   printf "${GREEN}You are running this script on Kali Linux${NC}\n"
    clear
 else
-   printf "${RED}This script must be run on Kali Linux${NC}"
+   printf "${RED}This script must be run on Kali Linux${NC}\n"
    exit
 fi
 # Check if the script is already running or not
 echo "Checking if the script is already running or not"
 if [[ -f /tmp/.setup-kali.lock ]]; then
-   printf "${RED}The script is already running${NC}"
+   printf "${GREEN}The script is already running${NC}\n"
    exit
 else
-   printf "${GREEN}The script is not running${NC}"
+   printf "${RED}The script is not running${NC}\n"
    sleep 1
 fi
 
 # Pulling the latest changes from the repository
-printf "${YELLOW}Fetching the repository and pulling the latest changes from the repository${NC}"
+printf "${BLUE}Fetching the repository and pulling the latest changes from the repository${NC}\n"
 git fetch https://github.com/karthik558/setup_kali_env.git && git pull https://github.com/karthik558/setup_kali_env.git
 sleep 1
+clear
 
 # Create a directory for the tools and enter into it
-printf "${YELLOW}Creating a directory for clonning the tools and entering into it${NC}"
+printf "${BLUE}Creating a directory for clonning the tools and entering into it${NC}\n"
 cd .. && mkdir -p Tools && cd Tools
+clear
 
 # Update the system
 apt update
@@ -86,11 +74,11 @@ apt install libssl-dev libffi-dev build-essential
 apt install tar tor curl python3 python3-scapy network-manager
 
 # Dependencies for system fetch
-printf "${BLUE}You sure you want to install SYSTEM_FETCH and HTOP? (y/n)${NC}"
+printf "${BLUE}You sure you want to install SYSTEM_FETCH and HTOP? (y/n)${NC}\n"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   printf "${GREEN}Installing system fetch${NC}"
+   printf "${GREEN}Installing system fetch${NC}\n"
    echo -ne '**          (20%)\r'
    sleep 1
    echo -ne '****        (40%)\r'
@@ -102,11 +90,13 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '**********   (100%)\r'
    echo -ne '\n'
    apt install neofetch
-   printf "${blue}Installing HTOP${NC}"
+   printf "${BLUE}Installing HTOP${NC}\n"
    apt install htop
+   clear
 else
-   echo "${RED}Skipped installing SYSTEM_FETCH and HTOP${NC}"
+   printf "${RED}Skipped installing SYSTEM_FETCH and HTOP${NC}\n"
    sleep 1
+   clear
 fi
 
 # Python3 Dependencies
@@ -133,11 +123,11 @@ cd mirrorscript-v2
 python3 mirrorscript-v2.py -h && python3 mirrorscript-v2.py -v -https -src
 cd ..
 # Clean, update and upgrade your kali-machine
-printf "${GREEN}Do you want to clean and upgrade the system now ? (y/n)${NC}"
+printf "${BLUE}Do you want to clean and upgrade the system now ? (y/n)${NC}\n"
 read -r answer
 
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}"
+   printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}\n"
    echo -ne '**          (20%)\r'
    sleep 1
    echo -ne '****        (40%)\r'
@@ -151,9 +141,11 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    apt clean
    apt update
    apt upgrade
+   clear
 else
-   printf "${GREEN}UPGRADE LATER${NC}"
+   printf "${GREEN}UPGRADE LATER${NC}\n"
    sleep 1
+   clear
 fi
 # Lets start cloning tools now
 # 1. Phoneinfoga (Information gathering & OSINT framework for phone numbers)
@@ -274,7 +266,7 @@ cd Any-Apk
 pwd && ls -l
 
 # Lets download GRUB Theme for Kali Linux
-printf "${RED}Do you want to download and install custom GRUB theme now ? (y/n)${NC}"
+printf "${RED}Do you want to download and install custom GRUB theme now ? (y/n)${NC}\n"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '**          (20%)\r'
@@ -287,18 +279,19 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    sleep 4
    echo -ne '**********   (100%)\r'
    echo -ne '\n'
-   cd .. && mkdir -p Grub-Theme && cd Grub-Theme
+   clear && cd .. && mkdir -p Grub-Theme && cd Grub-Theme
    git clone https://github.com/vandalsoul/dedsec-grub2-theme.git
 else
-   printf "${RED}You can download and install custom GRUB theme later by running this script again.${NC}"
+   printf "${RED}You can download and install custom GRUB theme later by running this script again.${NC}\n"
    sleep 1
+   clear
 fi
 
 # Lets clean and upgrade the system one more time
-printf "${YELLOW}Let's do some house keeping on your system ? (y/n) ${NC}"
+printf "${YELLOW}Let's do some house keeping on your system ? (y/n) ${NC}\n"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   printf "${RED}Cleaning and upgrading the system now.. ${NC}"
+   printf "${RED}Cleaning and upgrading your system now.. ${NC}\n"
    echo -ne '**          (20%)\r'
    sleep 1
    echo -ne '****        (40%)\r'
@@ -310,18 +303,25 @@ if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
    echo -ne '**********   (100%)\r'
    echo -ne '\n'
    sleep 1
-   apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
+   clear && apt clean && apt update && apt upgrade && apt autoremove && apt dist-upgrade
 else
-   printf "${YELLOW}You can clean and upgrading the system later.. ${NC}"
+   printf "${YELLOW}You can clean and upgrade your system later.. ${NC}\n"
    sleep 1
+   clear
 fi
 
 # Lets end this here by saying that we are done with Kali-env setup.
-printf "${GREEN}Setting up your hacking machine is completed successfully. ${NC}"
-printf "${RED}Now reboot your Kali Linux and enjoy your hacking experience. ${NC}"
-printf "${YELLOW}Thanks for using my setup-kali script. ${NC}"
-printf "${BLUE}Please visit https://github.com/karthik558 and star my repositories if you like them. ${NC}"
-printf "${CYAN}For any queries contact me through email : karthiklal@duck.com ${NC}"
+printf "${GREEN}SETTING UP YOUR HACKING MACHINE IS COMPLETED. ${NC}\n"
+sleep 2
+printf "${GREEN}NOW REBOOT YOUR DEVICE AND START HACKING.... ${NC}\n"
+sleep 2
+clear
+printf "${CYAN}THANK YOU FOR USING MY SETUP-KALI-SCRIPT. ${NC}\n"
+sleep 2
+clear
+printf "${CYAN}PLEASE VISIT https://github.com/karthik558 AND STAR MY PROJECTS IF YOU LIKE... ${NC}\n"
+sleep 2
+printf "${CYAN}FOR ANY QUERY'S CONTACT ME THROUGH email:karthiklal@duck.com ${NC}\n"
 
 # '##::::'##::::'###::::'########::'########::'##:::'##::::'##::::'##::::'###:::::'######::'##:::'##:'####:'##::: ##::'######:::
 #  ##:::: ##:::'## ##::: ##.... ##: ##.... ##:. ##:'##::::: ##:::: ##:::'## ##:::'##... ##: ##::'##::. ##:: ###:: ##:'##... ##::
@@ -333,28 +333,30 @@ printf "${CYAN}For any queries contact me through email : karthiklal@duck.com ${
 # ..:::::..::..:::::..::..:::::::::..::::::::::::..::::::::..:::::..::..:::::..:::......:::..::::..::....::..::::..:::......::::
 
 # Print final message/greetings to the $USER
-printf "${GREEN}HAPPY HACKING PEOPLES.....${NC}"
+clear
+printf "${GREEN}HAPPY HACKING PEOPLES.....${NC}\n"
+sleep 2
+
+# Information about the bugs/issues after using this script
+printf "${YELLOW} PLEASE READ THE BRIEF ABOUT THIS SCRIPT UNDER (setup-kali.sh)${NC}\n"
+printf "${YELLOW} IF YOU FIND ANY BUGS OR ISSUES PLEASE REPORT TO ME THROUGH EMAIL : karthiklal@duck.com ${NC}\n"
 sleep 2
 clear
 
-# Information about the bugs/issues after using this script
-printf "${RED} PLEASE READ THE BRIEF ABOUT THIS SCRIPT UNDER (setup-kali.sh) (#query%Brief&about%this%script${NC}"
-printf "${GREEN} IF YOU FIND ANY BUGS OR ISSUES PLEASE REPORT TO ME THROUGH EMAIL : karthiklal@duck.com"
-
 # Print Good Morning/Afternoon/Evening/Night message depending on the time of the day
 if [[ $(date +%H) -ge 0 && $(date +%H) -lt 12 ]]; then
-   printf "${GREEN}Good Morning, Have a Nice Day :) ${NC}"
+   printf "${BLUE}Good Morning, Have a Nice Day :) ${NC}\n"
 elif [[ $(date +%H) -ge 12 && $(date +%H) -lt 16 ]]; then
-   printf "${GREEN}Good Afternoon, Had your lunch? :-* ${NC}"
+   printf "${BLUE}Good Afternoon, Had your lunch? :-* ${NC}\n"
 elif [[ $(date +%H) -ge 16 && $(date +%H) -lt 20 ]]; then
-   printf "${GREEN}Good Evening, Had tea?  ;-) ${NC}"
+   printf "${BLUE}Good Evening, Had tea?  ;-) ${NC}\n"
 else
-   printf "${GREEN}Good Night, Sweet Dreams :-) ${NC}"
+   printf "${BLUE}Good Night, Sweet Dreams :-) ${NC}\n"
 fi
 sleep 2
 
 # Wait for user input before closing the terminal
-printf "${RED}Press any key to exit the terminal...${NC}"
+printf "${RED}Press any key to exit the terminal...${NC}\n"
 read -r -n 1 -s
 exit 0
 # SCRIPT ENDS HERE
