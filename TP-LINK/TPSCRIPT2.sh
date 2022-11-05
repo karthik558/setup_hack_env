@@ -26,11 +26,25 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Abort if not running on Kali Linux
-if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   printf "${RED}This script must be run on Kali Linux ${NC}" 1>&2
-   exit 1
-fi
+# Abort if not running on Kali Linux or ParrotOS
+echo "Checking if you are running this script on Kali Linux or ParrotOS"
+if [[ -f /etc/os-release ]]; then
+   . /etc/os-release
+   OS=$NAME
+   VER=$VERSION_ID
+   if [[ $OS == "Kali GNU/Linux" ]]; then
+      printf "${GREEN}You are running this script on Kali Linux${NC}\n"
+      sleep 1
+      clear
+   elif [[ $OS == "Parrot GNU/Linux" ]]; then
+      printf "${GREEN}You are running this script on Parrot OS${NC}\n"
+      sleep 1
+      clear
+   else
+      printf "${RED}You are not running this script on Kali Linux or Parrot OS${NC}\n"
+      sleep 1
+      exit
+   fi
 
 # Let's start
 # Update the system and upgrade the packages
@@ -86,14 +100,14 @@ fi
 # ├── TPLINK 722N Driver Installation Script 2 of 2 (TPSCRIPT2.sh)
 # ├── AUTHOR: KARTHIK LAL (https://github.com/karthik558) (https://karthiklal.live)
 # ├── DATE:   07.11.2021
-# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
+# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX AND PARROTOS DISTRIBUTION
 # ├── TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
 # ├── USE AT YOUR OWN RISK.
 # └── HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
 ##
 ## Script Information >>.
 ##
-# ├── This script is for installing the TP-LINK-WN722N driver on Kali Linux.
+# ├── This script is for installing the TP-LINK-WN722N driver on Kali Linux and ParrotOS.
 # └── This driver is directly taken from the aircrack-ng github repository.
 ##
 ## Script Liscence >>.

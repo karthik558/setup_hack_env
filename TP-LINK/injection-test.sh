@@ -24,17 +24,31 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Abort if not running on Kali Linux
-if [[ ! -e /etc/apt/sources.list.d/kali-linux.list ]]; then
-   printf "${RED}This script must be run on Kali Linux ${NC}" 1>&2
-   exit 1
-fi
+# Abort if not running on Kali Linux or ParrotOS
+echo "Checking if you are running this script on Kali Linux or ParrotOS"
+if [[ -f /etc/os-release ]]; then
+   . /etc/os-release
+   OS=$NAME
+   VER=$VERSION_ID
+   if [[ $OS == "Kali GNU/Linux" ]]; then
+      printf "${GREEN}You are running this script on Kali Linux${NC}\n"
+      sleep 1
+      clear
+   elif [[ $OS == "Parrot GNU/Linux" ]]; then
+      printf "${GREEN}You are running this script on Parrot OS${NC}\n"
+      sleep 1
+      clear
+   else
+      printf "${RED}You are not running this script on Kali Linux or Parrot OS${NC}\n"
+      sleep 1
+      exit
+   fi
 
 # Ask user if they want update and upgrade the system before testing the injection
 printf "${YELLOW}Do you want to update and upgrade the system before testing the injection? [Y/n] ${NC}"
 read -r answer
 if [[ $answer =~ ^([yY][eE][sS]|[yY])$ ]]; then
-   printf "${YELLOW}Your KALI LINUX is now UPDATING.. & UPGRADING..${NC}"
+   printf "${YELLOW}Your %DISTRO is now UPDATING.. & UPGRADING..${NC}"
    echo -ne '/\/\          (20%)\r'
    sleep 0
    echo -ne '/\/\/\/\        (40%)\r'
@@ -78,10 +92,10 @@ fi
 ## Author/Developer Information >>.
 ## License Information >>.
 ##
-# ├── KALI DESKTOP ENVIRONMENT SETUP SCRIPT
+# ├── HACKING DESKTOP ENVIRONMENT SETUP SCRIPT
 # ├── AUTHOR: KARTHIK LAL (https://github.com/karthik558) (https://karthiklal.live)
 # ├── DATE:   07.11.2021
-# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX DISTRIBUTION
+# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX AND PARROTOS DISTRIBUTION
 # ├── TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
 # ├── USE AT YOUR OWN RISK.
 # └── HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
@@ -92,7 +106,7 @@ fi
 # ├── It will try to inject a packet on channel 0 and channel 1.
 # └── If the packet is received, the injection is working.
 # └── If the packet is not received, the injection is not working.
-# └── This script is only for Kali Linux.
+# └── This script is only for Kali Linux and ParrotOS.
 # └── This script is only for TP-Link TL-WN722N V1 and V2.
 # └── Default interface set to 0 // change this accoding to you pc
 ##
