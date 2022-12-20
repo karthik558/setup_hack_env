@@ -25,24 +25,24 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # Abort if not running on Kali Linux or ParrotOS
-echo "Checking if you are running this script on Kali Linux or ParrotOS"
-if [[ -f /etc/os-release ]]; then
-   . /etc/os-release
-   OS=$NAME
-   VER=$VERSION_ID
-   if [[ $OS == "Kali GNU/Linux" ]]; then
-      printf "${GREEN}You are running this script on Kali Linux${NC}\n"
-      sleep 1
-      clear
-   elif [[ $OS == "Parrot GNU/Linux" ]]; then
-      printf "${GREEN}You are running this script on Parrot OS${NC}\n"
-      sleep 1
-      clear
-   else
-      printf "${RED}You are not running this script on Kali Linux or Parrot OS${NC}\n"
-      sleep 1
-      exit
-   fi
+# echo "Checking if you are running this script on Kali Linux or ParrotOS"
+# if [[ -f /etc/os-release ]]; then
+#    . /etc/os-release
+#    OS=$NAME
+#    VER=$VERSION_ID
+#    if [[ $OS == "Kali GNU/Linux" ]]; then
+#       printf "${GREEN}You are running this script on Kali Linux${NC}\n"
+#       sleep 1
+#       clear
+#    elif [[ $OS == "Parrot GNU/Linux" ]]; then
+#       printf "${GREEN}You are running this script on Parrot OS${NC}\n"
+#       sleep 1
+#       clear
+#    else
+#       printf "${RED}You are not running this script on Kali Linux or Parrot OS${NC}\n"
+#       sleep 1
+#       exit
+#    fi
 
 # Ask user if they want update and upgrade the system before testing the injection
 printf "${YELLOW}Do you want to update and upgrade the system before testing the injection? [Y/n] ${NC}"
