@@ -24,26 +24,6 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
-# Abort if not running on Kali Linux or ParrotOS
-# echo "Checking if you are running this script on Kali Linux or ParrotOS"
-# if [[ -f /etc/os-release ]]; then
-#    . /etc/os-release
-#    OS=$NAME
-#    VER=$VERSION_ID
-#    if [[ $OS == "Kali GNU/Linux" ]]; then
-#       printf "${GREEN}You are running this script on Kali Linux${NC}\n"
-#       sleep 1
-#       clear
-#    elif [[ $OS == "Parrot GNU/Linux" ]]; then
-#       printf "${GREEN}You are running this script on Parrot OS${NC}\n"
-#       sleep 1
-#       clear
-#    else
-#       printf "${RED}You are not running this script on Kali Linux or Parrot OS${NC}\n"
-#       sleep 1
-#       exit
-#    fi
-
 # Ask user if they want update and upgrade the system before testing the injection
 printf "${YELLOW}Do you want to update and upgrade the system before testing the injection? [Y/n] ${NC}"
 read -r answer
@@ -86,45 +66,3 @@ else
    aireplay-ng --test wlan1
    printf "${GREEN}Packet injection test done on interface 1 and its working fine ${NC}"
 fi
-
-##
-## Brief about this script >>.
-## Author/Developer Information >>.
-## License Information >>.
-##
-# ├── HACKING DESKTOP ENVIRONMENT SETUP SCRIPT
-# ├── AUTHOR: KARTHIK LAL (https://github.com/karthik558) (https://karthiklal.live)
-# ├── DATE:   07.11.2021
-# ├── CYBERSECURITY AND HACKING TOOLS FOR KALI LINUX AND PARROTOS DISTRIBUTION
-# ├── TOOLS ARE PROVIDED AS IS WITHOUT WARRANTY OF ANY KIND AND THE AUTHOR IS NOT RESPONSIBLE FOR ANY DAMAGE CAUSED BY THE USE OF THESE TOOLS.
-# ├── USE AT YOUR OWN RISK.
-# └── HACKING IS ILLEGAL. DO NOT ATTEMPT TO HACK. THIS IS A TOOL FOR EDUCATIONAL PURPOSE ONLY.
-##
-## Script Information >>.
-##
-# ├── This script is used to test the injection capability of the wireless card.
-# ├── It will try to inject a packet on channel 0 and channel 1.
-# └── If the packet is received, the injection is working.
-# └── If the packet is not received, the injection is not working.
-# └── This script is only for Kali Linux and ParrotOS.
-# └── This script is only for TP-Link TL-WN722N V1 and V2.
-# └── Default interface set to 0 // change this accoding to you pc
-##
-## Script Liscence >>.
-##
-## This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-## This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
-## You should have received a copy of the GNU General Public License along with this program. If not, see http://www.gnu.org/licenses/.
-##
-## Script Declaration >>.
-##
-# ├── THANKS FOR USING THIS SCRIPT.
-# ├── WE ARE HAPPY TO HAVE YOU ON OUR TEAM.
-# ├── WE ARE ALWAYS HERE TO HELP YOU (JUST RAISE A ISSUE ON GITHUB IF YOU HAVE ISSUE WITH THIS SCRIPT).
-# ├── THIS CODE IS WRITTEN BY : KARTHIK LAL (karthiklal@duck.com/karthiklal.live)
-# ├── WEBSITE : https://karthiklal.live
-# ├── EMAIL : karthik.lal558@gmail.com/karthiklal@duck.com
-# ├── GITHUB : karthik558
-# └── CONTRIBUTIONS ARE WELCOME. :)
-##
-##
