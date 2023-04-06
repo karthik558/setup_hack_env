@@ -1,40 +1,56 @@
-![HEADER_IMAGE](assets/script-linux.png)
+# Setup Hack Environment (Kali/ParrotOS) 
 
-## <b> ABOUT THIS SCRIPT
+A comprehensive collection of scripts utilized for OSINT, web application security testing, and ethical hacking purposes. (Universal) 
 
-* Set of tool's i use to automate my daily tasks and for learning purposes.
-* Included TP-LINK-722N wifi drivers. (check TP-LINK DRIVER folder) (run it according to there file-name). (instructions are on the README.md , check bottom)
-* Tool's are cloned/fetched from (https://github.com/Ethical-Hacking-Tools) 
+![](https://img.shields.io/github/license/karthik558/setup_hack_env?style=for-the-badge)
+![](https://img.shields.io/github/forks/karthik558/setup_hack_env?style=for-the-badge)
+![](https://img.shields.io/github/stars/karthik558/setup_hack_env?style=for-the-badge)
+![](https://img.shields.io/github/issues/karthik558/setup_hack_env?style=for-the-badge)
+![](https://img.shields.io/github/languages/code-size/karthik558/setup_hack_env?style=for-the-badge)
 
-## <b> NOTES/INSTRUCTIONS FOR USING THIS SCRIPT !
+![IMAGE](assets/script-linux.png)
 
-* Run the script with root privileges only(sudo).
-* This script is forced to work only on Kali-Linux and ParrotOS [forced]
-* Apply (Font & GRUB) path manually. (not necessary)
-* I haven't included script to download burp-suite pro (https://t.me/burpsuite) (for bug-bounty hunters)
+## Table of Contents
 
-## <b> HOW TO USE THIS SCRIPT ?
+- [Getting Started](#getting-started)
+- [Prerequisites](#prerequisites)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-* ` git clone https://github.com/karthik558/setup_hack_env `
-* ` cd setup_hack_env `
-* ` chmod +x setup-hack.sh `
-* ` ./setup-hack.sh ` (Only run this script with root privileges, else auto abort)
+## Getting Started
 
-## <b> HOW TO USE TP-LINK DRIVER SCRIPT ?
+- Set of tools I use to automate my daily tasks and for learning purposes.
+- Included TP-LINK-722N wifi drivers. (check TP-LINK folder) (Instructions are given on #Usage-TP-LINK-722N)
+- Tools are cloned/fetched from [Ethical-Hacking-Tools](https://github.com/Ethical-Hacking-Tools)
 
-* ` git clone https://github.com/karthik558/setup_hack_env `
-* ` cd setup_hack_env && cd TP-LINK* `
-* ` chmod * `
-* ` ./TPSCRIPT1.sh  `
-After completing the process, reboot your HACKING-MACHINE after rebooting, run this 
-* ` ./TPSCRIPT2.sh `
-After completing the process, reboot your HACKING-MACHINE again.
-* Finally after completing (1 & 2) run 
-* ` injection-test.sh ` 
-For checking if drivers are installed properly or not.
+## Prerequisites
 
-## <b> CONTRIBUTION !
-#### 
-* <i> <b> CONTRIBUTIONS AND SUGGESTIONS ARE ALWAYS WELCOME. </i>
-* <i> <b> PLEASE REPORT ANY BUGS OR PROBLEMS TO ME. </i>
-* <i> <b> Include signature of the person who is contributing. (or else it will not accepted)</i>
+- Run the script with root privileges only (sudo).
+- Download the full-font pack from [here](http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file) and extract it to /usr/share/fonts. [Note: This is optional]
+- I haven't included a script to download burp-suite pro, but you can get it from here (https://t.me/burpsuite) (for bug-bounty hunters)
+
+## Usage (Kali/ParrotOS)
+
+1. `git clone https://github.com/karthik558/setup_hack_env.git`
+2. `cd setup_hack_env`
+3. `sudo python3 setup-hack.py`
+
+## Usage (TP-LINK-722N)
+
+1. `git clone https://github.com/karthik558/setup_hack_env`
+2. `cd setup_hack_env && cd TP-LINK*`
+3. `sudo python3 TP722N1.py`
+4. After completing the process, reboot your pc, after rebooting, run the 2nd script.
+5. `sudo python3 TP722N2.py`
+6. After completing the process, reboot your pc again.
+7. Finally after completing (script-1 & script-2) run the 3rd script to check if drivers are installed properly or not.
+8. `sudo bash injection-test.sh`
+
+## Contributing
+
+Contributions to the project are welcome. If you would like to suggest an improvement or report a bug, please open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
