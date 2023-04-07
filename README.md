@@ -1,6 +1,6 @@
 # Setup Hack Environment (Kali/ParrotOS) 
 
-A comprehensive collection of scripts utilized for OSINT, web application security testing, and ethical hacking purposes. (Universal) 
+This is a diverse collection of scripts used for OSINT, ethical hacking, and web application security testing. The scripts cover a range of tasks, from automating daily tasks to driver installation, and are suitable for use on Kali-Linux and ParrotOS. The set of tools includes TP-LINK-722N wifi drivers, which can be accessed through the provided instructions, and is cloned from the Ethical-Hacking-Tools repository. Contributions and suggestions are always welcome, and bug reports should be directed to the author, with a signature for identification.
 
 ![](https://img.shields.io/github/license/karthik558/setup_hack_env?style=for-the-badge)
 ![](https://img.shields.io/github/forks/karthik558/setup_hack_env?style=for-the-badge)
