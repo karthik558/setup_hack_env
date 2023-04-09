@@ -48,7 +48,7 @@ else:
 # Pulling the latest changes from the repository
 print("{YELLOW}Fetching the repository and pulling the latest changes from the repository{NC}")
 os.system("git fetch https://github.com/karthik558/setup_hack_env.git")
-os.system("git pull https: // github.com/karthik558/setup_hack_env.git")
+os.system("git pull https://github.com/karthik558/setup_hack_env.git")
 time.sleep(1)
 os.system("clear")
 
@@ -276,7 +276,7 @@ print(f"{RED}Do you want to install create mitm attack? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mitm attack{NC}")
     os.system('apt install mdk3 -y')
-    os.system('git clone https: // github.com/karthik558/CREATE-MITM-APO.git')
+    os.system('git clone https: // github.com/karthik558/FakeAPBuilder.git')
     print(f"{GREEN}MITM Attack has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of mitm attack{NC}")
