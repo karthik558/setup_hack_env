@@ -13,7 +13,7 @@ def display_banner():
     banner +=    "██║╚════╝██║   ██╔══╝  ╚════██║   ██║/n"
     banner +=    "██║      ██║   ███████╗███████║   ██║/n"
     banner +=    "╚═╝      ╚═╝   ╚══════╝╚══════╝   ╚═╝/n"
-      
+    
 display_banner()
 
 # Terminal header settings and information

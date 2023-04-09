@@ -149,7 +149,7 @@ print(f"{RED}Do you want to install scylla? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing scylla{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/Scylla.git')
-    os.system('cd Scylla && git pull https://github.com/MandConsultingGroup/Scylla && python3 -m pip install -r requirements.txt && cd ..')
+    os.system('cd Scylla && git pull https://github.com/MandConsultingGroup/Scylla && python3 -m pip install -r requirments.txt && cd ..')
     print(f"{GREEN}Scylla has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of scylla{NC}")
@@ -217,9 +217,8 @@ else:
 print(f"{RED}Do you want to install xspear? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing xspear{NC}")
-    os.system('git clone https: // github.com/hahwul/XSpear.git')
-    os.system(
-        'cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem && cd ..')
+    os.system('git clone https://github.com/hahwul/XSpear.git')
+    os.system('cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem && cd ..')
     print(f"{GREEN}XSpear has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of xspear{NC}")
@@ -296,12 +295,16 @@ else:
 print(f"{RED}Do you want to install upi-int? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing upi-int{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools UPI-INT.git')
+    os.system('git clone https://github.com/Ethical-Hacking-Tools/UPI-INT.git')
     os.system('cd UPI-INT && git pull https://github.com/BiswajeetRay7/UPI-INT')
     print(f"{YELLOW}Installing Nodejs{NC}")
     os.system('apt install nodejs -y')
+    print(f"{YELLOW}Installing npm{NC}")
+    os.system('apt install npm -y')
     # Install npm axios
     os.system('npm install axios')
+    # Install npm bluebird
+    os.system('npm install bluebird')
     print(f"{GREEN}UPI-OSINT has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of upi-int{NC}")
@@ -312,7 +315,7 @@ print(f"{RED}Do you want to install track-ip? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing track-ip{NC}")
     os.system(
-        'git clone https://github.com/Ethical-Hacking-Tools track-ip.git && cd track-ip')
+        'git clone https://github.com/Ethical-Hacking-Tools/track-ip.git && cd track-ip')
     os.system('git pull https://github.com/htr-tech/track-ip && cd ..')
     print(f"{GREEN}Track-IP has been installed successfully{NC}")
 else:
@@ -324,8 +327,7 @@ print(f"{RED}Do you want to install holehe? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing holehe{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/holehe')
-    os.system(
-        'cd holehe && git pull https://github.com/Ethical-Hacking-Tools/holehe')
+    os.system('cd holehe && git pull https://github.com/megadose/holehe')
     os.system('python3 setup.py install && cd ..')
     print(f"{GREEN}Holehe has been installed successfully{NC}")
 else:
@@ -336,7 +338,7 @@ else:
 print(f"{RED}Do you want to install fluxion? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing fluxion{NC}")
-    os.system('https://github.com/Ethical-Hacking-Tools/fluxion.git')
+    os.system('git clone https://github.com/Ethical-Hacking-Tools/fluxion.git')
     os.system('cd fluxion && git pull https://github.com/FluxionNetwork/fluxion')
     os.system('chmod +x fluxion.sh && cd ..')
     print(f"{GREEN}Fluxion has been installed successfully{NC}")
@@ -390,14 +392,14 @@ else:
     print(f"Good Night {hostname},Installation is complete")
     time.sleep(2)
 
-# Let's start the script with a banner
+# Let's start the scrzipt with a banner
 def display_banner():
     
-    banner =    "███████ ████████  █████  ██████  ████████       ██   ██  █████   ██████ ██   ██ ██ ███    ██  ██████ /n"
-    banner = +  "██         ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ████   ██ ██      /n"
-    banner = +  "███████    ██    ███████ ██████     ██    █████ ███████ ███████ ██      █████   ██ ██ ██  ██ ██   ███/n"
-    banner = + "      ██    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ██  ██ ██ ██    ██/n"
-    banner = +  "███████    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██  ██████ ██   ██ ██ ██   ████  ██████ /n"
+    banner =    "███████ ████████  █████  ██████  ████████       ██   ██  █████   ██████ ██   ██ ██ ███    ██  ██████\n"
+    banner +=   "██         ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ████   ██ ██\n"
+    banner +=   "███████    ██    ███████ ██████     ██    █████ ███████ ███████ ██      █████   ██ ██ ██  ██ ██   ███\n"
+    banner +=        "██    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ██  ██ ██ ██    ██\n"
+    banner +=   "███████    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██  ██████ ██   ██ ██ ██   ████  ██████ \n"
     print(banner)
 
 display_banner()
