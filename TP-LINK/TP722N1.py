@@ -1,4 +1,5 @@
 import os
+import time
 
 # Let's start the script with a banner
 def display_banner():
@@ -42,12 +43,12 @@ print(f"{GREEN}Dependencies installed{NC}")
 
 # Installing Linux Headers
 print(f"{YELLOW}Installing Linux Headers{NC}")
-os.system("apt-get install linux-headers-$(uname -r)")
+os.system("apt-get install linux-headers-$(uname -r) -y")
 print(f"{GREEN}Linux Headers installed{NC}")
 
 # Installing DKMS and rmmod the old driver
 print(f"{YELLOW}Installing DKMS and rmmod the old driver{NC}")
-os.system("apt-get install dkms && rmmod r8188eu.ko")
+os.system("apt-get install dkms -y && rmmod r8188eu.ko")
 print(f"{GREEN}DKMS and rmmod the old driver installed{NC}")
 
 # Clone the driver from github

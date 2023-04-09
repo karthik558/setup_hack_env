@@ -1,5 +1,6 @@
 import os
 import socket
+import time
 
 # Let's start the script with a banner
 def display_banner():
