@@ -91,11 +91,13 @@ os.system("apt install tar curl python3 python3-scapy network-manager -y")
 # Python dependencies!]
 print(f"{YELLOW}Installing some python dependencies{NC}")
 os.system('apt install python3-venv -y')
+os.system('apt install python3-all -y')
 os.system('apt install python3-pip -y')
 os.system('apt install python3-pip php php-cli -y')
 os.system('apt install python3-pyqt5 hostapd -y')
 os.system('python3 -m venv venv -y')
 os.system('pip install pipenv -y')
+os.system('python3 -m pip install --user pipenv -y')
 
 # System fetch and system information preview packages
 print(f"{YELLOW}Installing htop and neofetch{NC}")
@@ -149,7 +151,10 @@ print(f"{RED}Do you want to install scylla? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing scylla{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/Scylla.git')
-    os.system('cd Scylla && git pull https://github.com/MandConsultingGroup/Scylla && python3 -m pip install -r requirments.txt && cd ..')
+    os.chdir('Scylla')
+    os.system('git pull https://github.com/MandConsultingGroup/Scylla')
+    os.system('python3 -m pip install -r requirements.txt')
+    os.chdir('..')    
     print(f"{GREEN}Scylla has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of scylla{NC}")
@@ -160,8 +165,10 @@ print(f"{RED}Do you want to install seeker? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing seeker{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/seeker.git')
-    os.system('cd seeker && git pull https://github.com/thewhiteh4t/seeker')
-    os.system('pip3 install requests && cd ..')
+    os.chdir('seeker')
+    os.system('git pull https://github.com/thewhiteh4t/seeker')
+    os.system('pip3 install requests')
+    os.chdir('..')
     print(f"{GREEN}Seeker has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of seeker{NC}")
@@ -172,9 +179,10 @@ print(f"{RED}Do you want to install sherlock? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing sherlock{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/sherlock.git')
-    os.system(
-        'cd sherlock && git pull https://github.com/sherlock-project/sherlock.git')
-    os.system('pip3 install -r requirements.txt && cd ..')
+    os.chdir('sherlock')
+    os.system('git pull https://github.com/sherlock-project/sherlock.git')
+    os.system('python3 -m pip install -r requirements.txt &')
+    os.chdir('..')
     print(f"{GREEN}Sherlock has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of sherlock{NC}")
@@ -185,8 +193,10 @@ print(f"{RED}Do you want to install osintgram? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing osintgram{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/Osintgram.git')
-    os.system('cd Osintgram && git pull https://github.com/Datalux/Osintgram.git')
-    os.system('pip3 install -r requirements.txt && cd ..')
+    os.chdir('Osintgram')    
+    os.system('git pull https://github.com/Datalux/Osintgram.git')
+    os.system('pip3 install -r requirements.txt')
+    os.chdir('..')
     print(f"{GREEN}Osintgram has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of osintgram{NC}")
@@ -197,8 +207,11 @@ print(f"{RED}Do you want to install nextfill? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing nextfill{NC}")
     os.system('git clone https://github.com/thewhiteh4t/nexfil.git')
-    os.system('cd nexfil && git pull https://github.com/thewhiteh4t/nexfil.git')
-    os.system('pip3 install -r requirements.txt && cd ..')
+    os.chdir('nexfil')
+    os.system('git pull https://github.com/thewhiteh4t/nexfil.git')
+    #os.system('pip3 install -r requirements.txt')
+    print(f"{YELLOW}Please run pip3 install -r requirements.txt manually{NC}")
+    os.chdir('..')
     print(f"{GREEN}Nextfill has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of nextfill{NC}")
@@ -218,7 +231,9 @@ print(f"{RED}Do you want to install xspear? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing xspear{NC}")
     os.system('git clone https://github.com/hahwul/XSpear.git')
-    os.system('cd XSpear && gem install XSpear && gem install XSpear-1.4.1.gem && cd ..')
+    os.chdir('XSpear')
+    os.system('gem install XSpear && gem install XSpear-1.4.1.gem')
+    os.chdir('..')
     print(f"{GREEN}XSpear has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of xspear{NC}")
@@ -229,7 +244,11 @@ print(f"{RED}Do you want to install mobile security framework? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mobile security framework{NC}")
     os.system('git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF')
-    os.system('cd Mobile-Security-Framework-MobSF && sudo ./setup.sh && cd ..')
+    print(f"{YELLOW}Installing some dependencies{NC}")
+    os.system('apt-get install -y xvfb libfontconfig wkhtmltopdf')
+    os.chdir('Mobile-Security-Framework-MobSF')
+    os.system('./setup.sh')
+    os.chdir('..')
     print(f"{GREEN}Mobile security framework has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of mobile security framework{NC}")
@@ -250,9 +269,10 @@ print(f"{RED}Do you want to install mhddos? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mhddos{NC}")
     os.system('git clone https://github.com/MatrixTM/MHDDoS.git')
-    os.system('cd MHDDoS && pip3 install -r requirements.txt')
-    os.system(
-        'pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade && cd ..')
+    os.chdir('MHDDoS')
+    os.system('pip3 install -r requirements.txt')
+    os.system('pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade')
+    os.chdir('..')
     print(f"{GREEN}MHDDOS has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of mhddos{NC}")
@@ -270,12 +290,12 @@ else:
     print(f"{RED}Skipping the installation of shark{NC}")
     time.sleep(1)
 
-# 13 - MITM Attack (This project is a bash script that automates the creation of fake access points for MITM (Man-in-the-Middle) attacks.)
-print(f"{RED}Do you want to install create mitm attack? (y/n){NC}")
+# 13 - FakeAPBuilder (This project is a bash script that automates the creation of fake access points for MITM (Man-in-the-Middle) attacks.)
+print(f"{RED}Do you want to install create fakeap-builder? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mitm attack{NC}")
     os.system('apt install mdk3 -y')
-    os.system('git clone https: // github.com/karthik558/FakeAPBuilder.git')
+    os.system('git clone https://github.com/karthik558/FakeAPBuilder.git')
     print(f"{GREEN}MITM Attack has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of mitm attack{NC}")
@@ -296,15 +316,17 @@ print(f"{RED}Do you want to install upi-int? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing upi-int{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/UPI-INT.git')
-    os.system('cd UPI-INT && git pull https://github.com/BiswajeetRay7/UPI-INT')
+    os.chdir('UPI-INT')
+    os.system('git pull https://github.com/BiswajeetRay7/UPI-INT')
     print(f"{YELLOW}Installing Nodejs{NC}")
     os.system('apt install nodejs -y')
     print(f"{YELLOW}Installing npm{NC}")
     os.system('apt install npm -y')
-    # Install npm axios
+    print(f"{YELLOW}Installing npm-axios{NC}")
     os.system('npm install axios')
-    # Install npm bluebird
+    print(f"{YELLOW}Installing npm-bluebird{NC}")
     os.system('npm install bluebird')
+    os.chdir('..')
     print(f"{GREEN}UPI-OSINT has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of upi-int{NC}")
@@ -314,9 +336,10 @@ else:
 print(f"{RED}Do you want to install track-ip? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing track-ip{NC}")
-    os.system(
-        'git clone https://github.com/Ethical-Hacking-Tools/track-ip.git && cd track-ip')
-    os.system('git pull https://github.com/htr-tech/track-ip && cd ..')
+    os.system('git clone https://github.com/Ethical-Hacking-Tools/track-ip.git')
+    os.chdir('track-ip')    
+    os.system('git pull https://github.com/htr-tech/track-ip')
+    os.chdir('..')
     print(f"{GREEN}Track-IP has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of track-ip{NC}")
@@ -327,8 +350,10 @@ print(f"{RED}Do you want to install holehe? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing holehe{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/holehe')
-    os.system('cd holehe && git pull https://github.com/megadose/holehe')
-    os.system('python3 setup.py install && cd ..')
+    os.chdir('holehe')
+    os.system('git pull https://github.com/megadose/holehe')
+    os.system('python3 setup.py install')
+    os.chdir('..')
     print(f"{GREEN}Holehe has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of holehe{NC}")
@@ -339,8 +364,10 @@ print(f"{RED}Do you want to install fluxion? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing fluxion{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/fluxion.git')
-    os.system('cd fluxion && git pull https://github.com/FluxionNetwork/fluxion')
-    os.system('chmod +x fluxion.sh && cd ..')
+    os.chdir('fluxion')
+    os.system('git pull https://github.com/FluxionNetwork/fluxion')
+    os.system('chmod +x fluxion.sh')
+    os.chdir('..')
     print(f"{GREEN}Fluxion has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of fluxion{NC}")
@@ -350,11 +377,10 @@ else:
 print(f"{RED}Do you want to install david-bombal scanner and exploiter scripts? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing david-bombal scanner and exploiter scripts{NC}")
-    os.system(
-        'git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts.git')
-    os.system(
-        'cd red-python-scripts && git pull https://github.com/davidbombal/red-python-scripts.git')
-    os.system('cd ..')
+    os.system('git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts.git')
+    os.chdir('red-python-scripts')
+    os.system('git pull https://github.com/davidbombal/red-python-scripts.git')
+    os.chdir('..')
     print(f"{GREEN}David-Bombal Scanner and Exploiter has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of david-bombal scanner and exploiter scripts{NC}")
@@ -364,8 +390,10 @@ else:
 print(f"{RED}Do you want to install villain? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing villain{NC}")
-    os.system('git clone https://github.com/t3l3machus/Villain.git && cd ./Villain && pip3 install -r requirements.txt')
-    os.system('cd ..')
+    os.system('git clone https://github.com/t3l3machus/Villain.git')
+    os.chdir('Villain')
+    os.system('pip3 install -r requirements.txt')
+    os.chdir('..')
     print(f"{GREEN}Villain has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of villain{NC}")
