@@ -98,6 +98,7 @@ os.system('apt install python3-pyqt5 hostapd -y')
 os.system('python3 -m venv venv -y')
 os.system('pip install pipenv -y')
 os.system('python3 -m pip install --user pipenv -y')
+os.system('pip install cloudscraper')
 
 # System fetch and system information preview packages
 print(f"{YELLOW}Installing htop and neofetch{NC}")
@@ -107,7 +108,7 @@ os.system("apt install htop neofetch -y")
 print(f"{YELLOW}Installing metasploit framework dependencies{NC}")
 os.system('apt install zipalign apksigner -y')
 os.system('wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /usr/local/bin/apktool')
-os.system('wget https://bitbucket.org/iBotPeaches/apk-signer/downloads/apk-signer-1.8.6.jar -O /usr/local/bin/apktool.jar')
+os.system('wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.7.0.jar -O /usr/local/bin/apktool.jar')
 # Lets make the apktool and apktool.jar executable
 print(f"{YELLOW}Making the apktool and apktool.jar executable{NC}")
 os.system('chmod +x /usr/local/bin/apktool')
@@ -153,7 +154,7 @@ if input() == "y":
     os.system('git clone https://github.com/Ethical-Hacking-Tools/Scylla.git')
     os.chdir('Scylla')
     os.system('git pull https://github.com/MandConsultingGroup/Scylla')
-    os.system('python3 -m pip install -r requirements.txt')
+    os.system('python3 -m pip install -r requirments.txt')
     os.chdir('..')    
     print(f"{GREEN}Scylla has been installed successfully{NC}")
 else:
@@ -181,7 +182,7 @@ if input() == "y":
     os.system('git clone https://github.com/Ethical-Hacking-Tools/sherlock.git')
     os.chdir('sherlock')
     os.system('git pull https://github.com/sherlock-project/sherlock.git')
-    os.system('python3 -m pip install -r requirements.txt &')
+    os.system('python3 -m pip install -r requirements.txt')
     os.chdir('..')
     print(f"{GREEN}Sherlock has been installed successfully{NC}")
 else:
