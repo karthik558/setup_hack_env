@@ -108,7 +108,7 @@ os.system("apt install htop neofetch -y")
 print(f"{YELLOW}Installing metasploit framework dependencies{NC}")
 os.system('apt install zipalign apksigner -y')
 os.system('wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /usr/local/bin/apktool')
-os.system('wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.7.0.jar -O /usr/local/bin/apktool.jar')
+os.system('wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.9.3.jar -O /usr/local/bin/apktool.jar')
 # Lets make the apktool and apktool.jar executable
 print(f"{YELLOW}Making the apktool and apktool.jar executable{NC}")
 os.system('chmod +x /usr/local/bin/apktool')
@@ -152,8 +152,7 @@ print(f"{RED}Do you want to install scylla? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing scylla{NC}")
     os.system('git clone https://github.com/Ethical-Hacking-Tools/Scylla.git')
-    os.chdir('Scylla')
-    os.system('git pull https://github.com/MandConsultingGroup/Scylla')
+    os.chdir('Scylla')    
     os.system('python3 -m pip install -r requirments.txt')
     os.chdir('..')    
     print(f"{GREEN}Scylla has been installed successfully{NC}")
@@ -189,21 +188,7 @@ else:
     print(f"{RED}Skipping the installation of sherlock{NC}")
     time.sleep(1)
 
-# 5 - Osintgram (Osintgram is a OSINT tool on Instagram. It offers an interactive shell to perform analysis on Instagram account of any users by its nickname)
-print(f"{RED}Do you want to install osintgram? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing osintgram{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/Osintgram.git')
-    os.chdir('Osintgram')    
-    os.system('git pull https://github.com/Datalux/Osintgram.git')
-    os.system('pip3 install -r requirements.txt')
-    os.chdir('..')
-    print(f"{GREEN}Osintgram has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of osintgram{NC}")
-    time.sleep(1)
-
-# 6 - Nextfill (OSINT tool for finding profiles by username)
+# 5 - Nextfill (OSINT tool for finding profiles by username)
 print(f"{RED}Do you want to install nextfill? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing nextfill{NC}")
@@ -218,7 +203,7 @@ else:
     print(f"{RED}Skipping the installation of nextfill{NC}")
     time.sleep(1)
 
-# 7 - Maryam Scanner (OWASP Maryam is a modular/optional open source framework based on OSINT and data gathering.)
+# 6 - Maryam Scanner (OWASP Maryam is a modular/optional open source framework based on OSINT and data gathering.)
 print(f"{RED}Do you want to install maryam scanner? (y/n){NC}")
 if input() == "y":
     os.system('apt install maryam')
@@ -227,7 +212,7 @@ else:
     print(f"{RED}Skipping the installation of maryam scanner{NC}")
     time.sleep(1)
 
-# 8 - XSpear (Powerfull XSS Scanning and Parameter analysis tool)
+# 7 - XSpear (Powerfull XSS Scanning and Parameter analysis tool)
 print(f"{RED}Do you want to install xspear? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing xspear{NC}")
@@ -240,22 +225,7 @@ else:
     print(f"{RED}Skipping the installation of xspear{NC}")
     time.sleep(1)
 
-# 9 - Mobile Security Framework (Mobile Security Framework (MobSF) is an automated, all-in-one mobile application (Android/iOS/Windows) pen-testing, malware analysis and security assessment framework capable of performing static and dynamic analysis.)
-print(f"{RED}Do you want to install mobile security framework? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing mobile security framework{NC}")
-    os.system('git clone https://github.com/MobSF/Mobile-Security-Framework-MobSF')
-    print(f"{YELLOW}Installing some dependencies{NC}")
-    os.system('apt-get install -y xvfb libfontconfig wkhtmltopdf')
-    os.chdir('Mobile-Security-Framework-MobSF')
-    os.system('./setup.sh')
-    os.chdir('..')
-    print(f"{GREEN}Mobile security framework has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of mobile security framework{NC}")
-    time.sleep(1)
-
-# 10 - SecList (SecLists is the security tester's companion. It's a collection of multiple types of lists used during security assessments, collected in one place. List types include usernames, passwords, URLs, sensitive data patterns, fuzzing payloads, web shells, and many more.)
+# 8 - SecList (SecLists is the security tester's companion. It's a collection of multiple types of lists used during security assessments, collected in one place. List types include usernames, passwords, URLs, sensitive data patterns, fuzzing payloads, web shells, and many more.)
 print(f"{RED}Do you want to install seclist? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing seclist{NC}")
@@ -265,7 +235,7 @@ else:
     print(f"{RED}Skipping the installation of seclist{NC}")
     time.sleep(1)
 
-# 11 - MHDDOS (Best DDoS Attack Script Python3, Cyber Attack With 36 Methods)
+# 9 - MHDDOS (Best DDoS Attack Script Python3, Cyber Attack With 36 Methods)
 print(f"{RED}Do you want to install mhddos? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mhddos{NC}")
@@ -279,7 +249,7 @@ else:
     print(f"{RED}Skipping the installation of mhddos{NC}")
     time.sleep(1)
 
-# 12 - SHARK (A shark is a tool that will help you do Phishing in an advanced way so no one checks and identify that you are doing phishing.
+# 10 - SHARK (A shark is a tool that will help you do Phishing in an advanced way so no one checks and identify that you are doing phishing.
 print(f"{RED}Do you want to install shark? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing shark{NC}")
@@ -291,7 +261,7 @@ else:
     print(f"{RED}Skipping the installation of shark{NC}")
     time.sleep(1)
 
-# 13 - FakeAPBuilder (This project is a bash script that automates the creation of fake access points for MITM (Man-in-the-Middle) attacks.)
+# 11 - FakeAPBuilder (This project is a bash script that automates the creation of fake access points for MITM (Man-in-the-Middle) attacks.)
 print(f"{RED}Do you want to install create fakeap-builder? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing mitm attack{NC}")
@@ -302,7 +272,7 @@ else:
     print(f"{RED}Skipping the installation of mitm attack{NC}")
     time.sleep(1)
 
-# 14 - Netdiscover (Netdiscover is a tool for discovering hosts on a local area network. It uses ARP requests to find out which hosts are up and which IP addresses they have.)
+# 12 - Netdiscover (Netdiscover is a tool for discovering hosts on a local area network. It uses ARP requests to find out which hosts are up and which IP addresses they have.)
 print(f"{RED}Do you want to install netdiscover? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing netdiscover{NC}")
@@ -312,7 +282,7 @@ else:
     print(f"{RED}Skipping the installation of netdiscover{NC}")
     time.sleep(1)
 
-# 15 - UPI-OSINT (This tool is used to find the name of the bank and the bank account holder's name from the UPI ID.)
+# 13 - UPI-OSINT (This tool is used to find the name of the bank and the bank account holder's name from the UPI ID.)
 print(f"{RED}Do you want to install upi-int? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing upi-int{NC}")
@@ -333,7 +303,7 @@ else:
     print(f"{RED}Skipping the installation of upi-int{NC}")
     time.sleep(1)
 
-# 16 - Track-IP (Track-IP is a tool that allows you to track the location of an IP address.)
+# 14 - Track-IP (Track-IP is a tool that allows you to track the location of an IP address.)
 print(f"{RED}Do you want to install track-ip? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing track-ip{NC}")
@@ -346,7 +316,7 @@ else:
     print(f"{RED}Skipping the installation of track-ip{NC}")
     time.sleep(1)
 
-# 17 - Holehe (Holehe is a tool that allows you to find the email address of a person using their username on different platforms.)
+# 15 - Holehe (Holehe is a tool that allows you to find the email address of a person using their username on different platforms.)
 print(f"{RED}Do you want to install holehe? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing holehe{NC}")
@@ -360,7 +330,7 @@ else:
     print(f"{RED}Skipping the installation of holehe{NC}")
     time.sleep(1)
 
-# 18 - Fluxion (Fluxion is a tool that allows you to hack wifi networks.)
+# 16 - Fluxion (Fluxion is a tool that allows you to hack wifi networks.)
 print(f"{RED}Do you want to install fluxion? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing fluxion{NC}")
@@ -374,7 +344,7 @@ else:
     print(f"{RED}Skipping the installation of fluxion{NC}")
     time.sleep(1)
 
-# 19 - David-Bombal Scanner and Exploiter (David-Bombal script is very useful for performing various types of attacks on a target machine)
+# 17 - David-Bombal Scanner and Exploiter (David-Bombal script is very useful for performing various types of attacks on a target machine)
 print(f"{RED}Do you want to install david-bombal scanner and exploiter scripts? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing david-bombal scanner and exploiter scripts{NC}")
@@ -387,7 +357,7 @@ else:
     print(f"{RED}Skipping the installation of david-bombal scanner and exploiter scripts{NC}")
     time.sleep(1)
 
-# 20 - Villain Tool is a Windows & Linux backdoor generator and multi-session handler that allows users to connect with sibling servers(other machines running Villain) and share their backdoor sessions, handy for working as a team.)
+# 18 - Villain Tool is a Windows & Linux backdoor generator and multi-session handler that allows users to connect with sibling servers(other machines running Villain) and share their backdoor sessions, handy for working as a team.)
 print(f"{RED}Do you want to install villain? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing villain{NC}")
@@ -400,6 +370,34 @@ else:
     print(f"{RED}Skipping the installation of villain{NC}")
     time.sleep(1)
 
+# 19 - TrucallerJS (This is a library for retrieving phone number details using the Truecaller API.)
+print(f"{RED}Do you want to install TrucallerJS? (y/n){NC}")
+if input() == "y":
+    print(f"{YELLOW}Installing TrucallerJS{NC}")
+    os.system('git clone https://github.com/sumithemmadi/truecallerjs.git')
+    os.chdir('TrucallerJS')
+    os.system('npm install truecallerjs')
+    os.system('npm install -g truecallerjs')    
+    os.chdir('..')
+    print(f"{GREEN}TrucallerJS has been installed successfully{NC}")
+else:
+    print(f"{RED}Skipping the installation of TrucallerJS{NC}")
+    time.sleep(1)
+    
+# 20 - TrucallerJS (This is a library for retrieving phone number details using the Truecaller API.)
+print(f"{RED}Do you want to install TrucallerJS? (y/n){NC}")
+if input() == "y":
+    print(f"{YELLOW}Installing TrucallerJS{NC}")
+    os.system('git clone https://github.com/sumithemmadi/truecallerjs.git')
+    os.chdir('TrucallerJS')
+    os.system('npm install truecallerjs')
+    os.system('npm install -g truecallerjs')    
+    os.chdir('..')
+    print(f"{GREEN}TrucallerJS has been installed successfully{NC}")
+else:
+    print(f"{RED}Skipping the installation of TrucallerJS{NC}")
+    time.sleep(1)
+    
 # Lets update the clean and update the system once again
 os.system('apt update -y && apt upgrade -y && apt autoremove -y && apt autoclean -y')
 
