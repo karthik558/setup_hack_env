@@ -375,21 +375,7 @@ print(f"{RED}Do you want to install TrucallerJS? (y/n){NC}")
 if input() == "y":
     print(f"{YELLOW}Installing TrucallerJS{NC}")
     os.system('git clone https://github.com/sumithemmadi/truecallerjs.git')
-    os.chdir('TrucallerJS')
-    os.system('npm install truecallerjs')
-    os.system('npm install -g truecallerjs')    
-    os.chdir('..')
-    print(f"{GREEN}TrucallerJS has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of TrucallerJS{NC}")
-    time.sleep(1)
-    
-# 20 - TrucallerJS (This is a library for retrieving phone number details using the Truecaller API.)
-print(f"{RED}Do you want to install TrucallerJS? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing TrucallerJS{NC}")
-    os.system('git clone https://github.com/sumithemmadi/truecallerjs.git')
-    os.chdir('TrucallerJS')
+    os.chdir('truecallerjs')
     os.system('npm install truecallerjs')
     os.system('npm install -g truecallerjs')    
     os.chdir('..')
