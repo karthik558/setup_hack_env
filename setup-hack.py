@@ -118,6 +118,15 @@ os.system('chmod +x /usr/local/bin/apktool.jar')
 print(f"{YELLOW}Unzipping the wordlist from /usr/share/wordlists/rockyou.txt.gz{NC}")
 os.system('gzip -d /usr/share/wordlists/rockyou.txt.gz')
 
+# Enable VirtualEnv for python
+print(f"{YELLOW}Enabling the virtual environment for python{NC}")
+os.chdir("..")
+os.makedirs(".virtualvenv", exist_ok=True)
+os.chdir(".virtualvenv")
+os.system('python3 -m venv ~/.virtualenvs/')
+os.system('source ~/.virtualenvs/bin/activate')
+print(f"{GREEN}Virtual environment has been enabled successfully{NC}")
+
 # Telegram Desktop installation (optional)
 print(f"{YELLOW}Do you want to install telegram desktop? (y/n){NC}")
 telegram = input()
@@ -382,6 +391,21 @@ if input() == "y":
     print(f"{GREEN}TrucallerJS has been installed successfully{NC}")
 else:
     print(f"{RED}Skipping the installation of TrucallerJS{NC}")
+    time.sleep(1)
+    
+# 20 - Volatility (Volatility is a memory forensics framework for incident response and malware analysis.)
+print(f"{RED}Do you want to install volatility? (y/n){NC}")
+if input() == "y":
+    print(f"{YELLOW}Installing volatility{NC}")
+    os.system('git clone https://github.com/volatilityfoundation/volatility3.git')
+    os.chdir('volatility3')    
+    os.system('python3 setup.py build')
+    os.system('python3 setup.py install')
+    os.system('pip3 install -r requirements.txt')
+    os.chdir('..')
+    print(f"{GREEN}Volatility has been installed successfully{NC}")
+else:
+    print(f"{RED}Skipping the installation of volatility{NC}")
     time.sleep(1)
     
 # Lets update the clean and update the system once again
