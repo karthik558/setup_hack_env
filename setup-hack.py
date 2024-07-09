@@ -120,11 +120,11 @@ os.system('gzip -d /usr/share/wordlists/rockyou.txt.gz')
 
 # Enable VirtualEnv for python
 print(f"{YELLOW}Enabling the virtual environment for python{NC}")
-os.chdir("..")
-os.makedirs(".virtualvenv", exist_ok=True)
+os.makedirs("~/.virtualvenv", exist_ok=True)
 os.chdir(".virtualvenv")
 os.system('python3 -m venv ~/.virtualenvs/')
 os.system('source ~/.virtualenvs/bin/activate')
+os.chdir('..')
 print(f"{GREEN}Virtual environment has been enabled successfully{NC}")
 
 # Telegram Desktop installation (optional)
