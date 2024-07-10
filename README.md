@@ -36,7 +36,7 @@ This is a diverse collection of scripts used for OSINT, ethical hacking, and web
 2. `cd setup_hack_env`
 3. `sudo python3 setup-hack.py`
 
-## Usage (TP-LINK-722N)
+## Usage (TP-LINK-722N) (Deprecated)
 
 1. `git clone https://github.com/karthik558/setup_hack_env`
 2. `cd setup_hack_env && cd TP-LINK*`
