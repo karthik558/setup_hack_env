@@ -443,29 +443,3 @@ display_banner()
 
 # Press enter to exit
 print(f"{GREEN}Press enter to exit{NC}")
-
-# Some fixes after installation of tools #
-# For fixing font blank issues in system-wide then download this file and extrat it to /usr/share/fonts/ or /usr/share/local/fonts/ - http://www.mediafire.com/file/on3q6yhfqzo4jh1/Fonts.zip/file
-
-# Fix grub resolution issue #
-# sudo nano /etc/default/grub -> GRUB_GFXMODE=1920x1080x32
-# /etc/default/grub.d folder is used to change the resolution.
-# sudo update-grub && sudo grub-mkconfig -o /boot/grub/grub.cfg && sudo reboot
-# In case of grub not showing windows partition then add GRUB_DISABLE_OS_PROBER=false on /etc/default/grub
-
-# Remove the sudo permission for the tools folder to avoid permission issues #
-# chown -R username: /home/username (username is your username) eg: chown -R root: /home/root (This will change the permission of /home/root folder to root user)
-
-# Change the default shell from zsh to bash #
-# chsh -s /bin/bash (This will change the default shell from zsh to bash)
-
-# Configure proxychains #
-# sudo nano /etc/proxychains.conf or /etc/proxychains4.conf
-# comment out the line strict_chain and uncomment the line dynamic_chain
-# Add the following lines to the end of the file and save it (This will make proxychains to use tor) - socks5  127.0.0.1 9050
-# save the file and exit
-# sudo service tor start (This will start the tor service) or sudo systemctl start tor.
-# proxychains www.google.com (This will open google.com through tor)
-
-# Contributing #
-# If you want to contribute to this project then you can add more tools to this script. You can also add more features to this script. You can also fix the bugs in this script.! You can also add more comments to this script. You can also add more colors to this script. You can also add more emojis to this script. You can also add more and more!
