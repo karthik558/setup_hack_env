@@ -6,7 +6,7 @@ Curated with **65+ top-tier cybersecurity tools** fetched directly from their **
 
 Includes an **interactive terminal checkbox selector with live fuzzy search filtering**, **role-based installation presets**, **isolated virtual environments per tool**, a **pre-flight system doctor**, **disk space manager & cache cleaner**, **JSON configuration export/import**, and **containerized Docker support**.
 
-![Banner](assets/script-linux.png)
+![SETUP_HACK_ENV Banner](assets/banner.jpg)
 
 ---
 
