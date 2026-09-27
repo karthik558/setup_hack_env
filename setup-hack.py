@@ -1,445 +1,1727 @@
+#!/usr/bin/env python3
+"""
+================================================================================
+  SETUP_HACK_ENV - Advanced Ethical Hacking & Penetration Testing Suite
+  Author   : Karthik Lal (https://karthiklal.in)
+  Version  : 4.0.0 (Enterprise Red Team Edition)
+  License  : MIT
+================================================================================
+"""
+
 import os
+import sys
 import time
-import subprocess
-import datetime
+import shutil
 import socket
+import datetime
+import argparse
+import platform
+import subprocess
+from pathlib import Path
 
-# Colors for the terminal
-RED = '\033[0;31m'
-GREEN = '\033[0;32m'
-YELLOW = '\033[0;33m'
-BLUE = '\033[0;34m'
-VIOLET = '\033[0;35m'
-CYAN = '\033[0;36m'
-BLACK = '\033[0;30m'
-NC = '\033[0m'  # No Color
+# ==============================================================================
+#  CROSS-PLATFORM INITIALIZATION (WINDOWS / MACOS / LINUX)
+# ==============================================================================
 
-# Let's start the script with a banner
+def init_terminal_environment():
+    """Configure terminal for ANSI color support across Windows, macOS, and Linux."""
+    if os.name == "nt":
+        try:
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            h_out = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+            mode = ctypes.c_ulong()
+            if kernel32.GetConsoleMode(h_out, ctypes.byref(mode)):
+                mode.value |= 0x0004  # ENABLE_VIRTUAL_TERMINAL_PROCESSING
+                kernel32.SetConsoleMode(h_out, mode)
+        except Exception:
+            pass
+
+init_terminal_environment()
+
+def is_admin():
+    """Check for elevated root / administrator privileges across all OS."""
+    if os.name == "nt":
+        try:
+            import ctypes
+            return ctypes.windll.shell32.IsUserAnAdmin() != 0
+        except Exception:
+            return False
+    else:
+        return os.geteuid() == 0 if hasattr(os, "geteuid") else False
+
+def get_platform_info():
+    """
+    Detect operating system family, distro details, package manager, and architecture.
+    Supports:
+      - Linux: Debian, Kali, Parrot, Ubuntu, Arch, Manjaro, Fedora, RHEL, CentOS, openSUSE, Alpine, etc.
+      - macOS: Intel & Apple Silicon (Darwin)
+      - Windows: Windows 10, 11, Server (NT)
+    """
+    system = platform.system()
+    arch = platform.machine() or "unknown"
+
+    if system == "Windows":
+        os_type = "Windows"
+        os_name = f"Windows {platform.release()}"
+        if shutil.which("winget"):
+            pm, pm_name = "winget", "Winget (Windows Package Manager)"
+        elif shutil.which("choco"):
+            pm, pm_name = "choco", "Chocolatey"
+        elif shutil.which("scoop"):
+            pm, pm_name = "scoop", "Scoop"
+        else:
+            pm, pm_name = None, "Manual"
+
+    elif system == "Darwin":
+        os_type = "macOS"
+        mac_ver = platform.mac_ver()[0]
+        os_name = f"macOS {mac_ver}" if mac_ver else "macOS"
+        if shutil.which("brew"):
+            pm, pm_name = "brew", "Homebrew"
+        elif shutil.which("port"):
+            pm, pm_name = "port", "MacPorts"
+        else:
+            pm, pm_name = None, "None"
+
+    elif system == "Linux":
+        os_type = "Linux"
+        distro = "Linux"
+        if os.path.exists("/etc/os-release"):
+            try:
+                with open("/etc/os-release", "r", encoding="utf-8", errors="ignore") as f:
+                    for line in f:
+                        if line.startswith("PRETTY_NAME="):
+                            distro = line.split("=", 1)[1].strip().strip('"')
+                            break
+                        elif line.startswith("NAME=") and distro == "Linux":
+                            distro = line.split("=", 1)[1].strip().strip('"')
+            except Exception:
+                pass
+        os_name = distro
+
+        linux_pms = [
+            ("apt", "APT (Debian/Kali/Parrot/Ubuntu)"),
+            ("pacman", "Pacman (Arch/Manjaro/BlackArch)"),
+            ("dnf", "DNF (Fedora/RHEL/CentOS)"),
+            ("yum", "YUM (RHEL/CentOS)"),
+            ("zypper", "Zypper (openSUSE)"),
+            ("apk", "APK (Alpine Linux)"),
+            ("xbps-install", "XBPS (Void Linux)"),
+            ("eopkg", "Eopkg (Solus)"),
+            ("nix-env", "Nix (NixOS)"),
+        ]
+        pm, pm_name = None, "None"
+        for cmd, name in linux_pms:
+            if shutil.which(cmd):
+                pm, pm_name = cmd, name
+                break
+    else:
+        os_type = system or "Unknown"
+        os_name = f"{system} {platform.release()}"
+        pm, pm_name = None, "None"
+
+    return {
+        "os_type": os_type,
+        "os_name": os_name,
+        "pkg_manager": pm,
+        "pkg_manager_name": pm_name,
+        "is_admin": is_admin(),
+        "arch": arch,
+    }
+
+PLATFORM_INFO = get_platform_info()
+
+# ==============================================================================
+#  TERMINAL COLOR STYLING & FORMATTING ENGINE
+# ==============================================================================
+
+class Color:
+    """ANSI 256-color & TrueColor palette with automatic fallback detection."""
+    ENABLED = sys.stdout.isatty() and not os.environ.get("NO_COLOR")
+
+    # Core Accents
+    CYAN    = "\033[38;5;51m" if ENABLED else ""
+    BLUE    = "\033[38;5;39m" if ENABLED else ""
+    PURPLE  = "\033[38;5;141m" if ENABLED else ""
+    GREEN   = "\033[38;5;48m" if ENABLED else ""
+    YELLOW  = "\033[38;5;220m" if ENABLED else ""
+    RED     = "\033[38;5;196m" if ENABLED else ""
+    ORANGE  = "\033[38;5;208m" if ENABLED else ""
+    MAGENTA = "\033[38;5;201m" if ENABLED else ""
+    GRAY    = "\033[38;5;244m" if ENABLED else ""
+    DARK    = "\033[38;5;238m" if ENABLED else ""
+    WHITE   = "\033[38;5;255m" if ENABLED else ""
+
+    # Text Attributes
+    BOLD      = "\033[1m" if ENABLED else ""
+    DIM       = "\033[2m" if ENABLED else ""
+    ITALIC    = "\033[3m" if ENABLED else ""
+    UNDERLINE = "\033[4m" if ENABLED else ""
+    INVERSE   = "\033[7m" if ENABLED else ""
+    RESET     = "\033[0m" if ENABLED else ""
+
+    # Status Badges
+    SUCCESS = f"{GREEN}{BOLD}[✔]{RESET}"
+    ERROR   = f"{RED}{BOLD}[✖]{RESET}"
+    WARN    = f"{YELLOW}{BOLD}[⚠]{RESET}"
+    INFO    = f"{BLUE}{BOLD}[ℹ]{RESET}"
+    STEP    = f"{CYAN}{BOLD}[➜]{RESET}"
+    STAR    = f"{YELLOW}{BOLD}[★]{RESET}"
+    CHECK   = f"{GREEN}{BOLD}[✓]{RESET}"
+    UNCHECK = f"{GRAY}[ ]{RESET}"
+
+def clear_screen():
+    """Clear terminal screen portably across Windows, macOS, and Linux."""
+    if os.name == "nt":
+        os.system("cls")
+    elif Color.ENABLED:
+        sys.stdout.write("\033[2J\033[H")
+        sys.stdout.flush()
+    else:
+        os.system("clear")
+
+def get_terminal_width():
+    """Return current terminal width clamped safely."""
+    try:
+        cols, _ = shutil.get_terminal_size((80, 24))
+        return max(70, min(cols, 120))
+    except Exception:
+        return 80
+
+def get_terminal_height():
+    """Return current terminal height."""
+    try:
+        _, lines = shutil.get_terminal_size((80, 24))
+        return lines
+    except Exception:
+        return 24
+
+# ==============================================================================
+#  ASCII BANNER
+# ==============================================================================
+
 def display_banner():
-
-    banner =    "███████ ███████ ████████ ██    ██ ██████        ██   ██  █████   ██████ ██   ██\n"
-    banner +=   "██      ██         ██    ██    ██ ██   ██       ██   ██ ██   ██ ██      ██  ██\n"
-    banner +=   "███████ █████      ██    ██    ██ ██████  █████ ███████ ███████ ██      █████\n"
-    banner +=        "██ ██         ██    ██    ██ ██            ██   ██ ██   ██ ██      ██  ██\n"
-    banner +=   "███████ ███████    ██     ██████  ██            ██   ██ ██   ██  ██████ ██   ██\n"
-    print(banner)
+    """Render the updated, professional Cyberpunk banner."""
+    width = get_terminal_width()
+    banner_art = f"""{Color.CYAN}{Color.BOLD}
+ ███████╗███████╗████████╗██╗   ██╗██████╗     ██╗  ██╗ █████╗  ██████╗██╗  ██╗
+ ██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗    ██║  ██║██╔══██╗██╔════╝██║ ██╔╝
+ ███████╗█████╗     ██║   ██║   ██║██████╔╝    ███████║███████║██║     █████╔╝ 
+ ╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝     ██╔══██║██╔══██║██║     ██╔═██╗ 
+ ███████║███████╗   ██║   ╚██████╔╝██║         ██║  ██║██║  ██║╚██████╗██║  ██╗
+ ╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝         ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝{Color.RESET}"""
     
-display_banner()
+    tagline = (
+        f"{Color.PURPLE}╔" + "═" * (width - 4) + f"╗{Color.RESET}\n"
+        f"{Color.PURPLE}║  {Color.YELLOW}{Color.BOLD}★ ADVANCED ETHICAL HACKING & PENETRATION TESTING ENVIRONMENT ★{Color.RESET}"
+        + " " * max(0, width - 67) + f"{Color.PURPLE}║{Color.RESET}\n"
+        f"{Color.PURPLE}║  {Color.GREEN}Cross-Platform (Windows/Mac/Linux) {Color.DIM}│{Color.RESET}{Color.GREEN} Upstream Sources {Color.DIM}│{Color.RESET}{Color.GREEN} Auto-Updater {Color.DIM}│{Color.RESET}{Color.GREEN} Multi-Select{Color.RESET}"
+        + " " * max(0, width - 87) + f"{Color.PURPLE}║{Color.RESET}\n"
+        f"{Color.PURPLE}╚" + "═" * (width - 4) + f"╝{Color.RESET}"
+    )
+    print(banner_art)
+    print(tagline)
+    print()
 
-# Terminal header settings and information
-print(f"{RED}Developer   :   KARTHIK LAL (https: // karthiklal.live){NC}")
-print(f"{RED}Created Date:   2021-12-07{NC}")
-print(f"{RED}Project     :   SETUP_HACK_ENV{NC}")
-print(f"{RED}Purpose     :   Linux Dotfile{NC}")
-print(f"{RED}Caution     :   This script will install all the necessary tools for hacking{NC}")
-print()
+def display_status_header(target_dir):
+    """Print system environment metadata across Windows, macOS, and Linux."""
+    info = PLATFORM_INFO
+    admin_str = f"{Color.GREEN}Elevated (Admin/Root){Color.RESET}" if info["is_admin"] else f"{Color.YELLOW}Standard User ({os.getenv('USER') or os.getenv('USERNAME') or 'user'}){Color.RESET}"
+    hostname = socket.gethostname()
+    py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro} ({info['arch']})"
 
-# Abort the script if the user is not root
-print("Checking if you are running this script on su mode or not")
-if not os.geteuid() == 0:
-    print(f"{RED}This script must be run as root{NC}")
-    time.sleep(1)
-    exit()
-else:
-    print(f"{GREEN}You are running this script on su mode{NC}")
-    time.sleep(1)
-    os.system("clear")
+    print(f" {Color.DARK}┌─[{Color.RESET} {Color.BOLD}CROSS-PLATFORM ENVIRONMENT{Color.RESET} {Color.DARK}]" + "─" * 38 + f"┐{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}OS Platform{Color.RESET}: {Color.CYAN}{info['os_name']}{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}Package Mgr{Color.RESET}: {Color.PURPLE}{info['pkg_manager_name']}{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}Privileges{Color.RESET} : {admin_str}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}Host / Arch{Color.RESET}: {Color.BLUE}{hostname}{Color.RESET} {Color.DIM}({info['arch']}){Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}Python{Color.RESET}     : {Color.BLUE}{py_ver}{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET}  {Color.BOLD}Directory{Color.RESET}  : {Color.GREEN}{target_dir}{Color.RESET}")
+    print(f" {Color.DARK}└" + "─" * 65 + f"┘{Color.RESET}")
+    print()
 
-# Pulling the latest changes from the repository
-print("{YELLOW}Fetching the repository and pulling the latest changes from the repository{NC}")
-os.system("git fetch https://github.com/karthik558/setup_hack_env.git")
-os.system("git pull https://github.com/karthik558/setup_hack_env.git")
-time.sleep(1)
-os.system("clear")
+# ==============================================================================
+#  TOOL DATA MODEL & REPOSITORY CATALOG (OFFICIAL UPSTREAM SOURCES ONLY)
+# ==============================================================================
 
-# Ask user for updating the system, if yes then update the system
-print(f"{YELLOW}Do you want to update the system? (y/n){NC}")
-update = input()
-if update == "y":
-    print(f"{YELLOW}Updating the system{NC}")
-    os.system("apt update && apt upgrade -y")
-    os.system("clear")
-else:
-    print(f"{YELLOW}Skipping the update{NC}")
-    time.sleep(1)
-    os.system("clear")
+class Tool:
+    """Represents a curated cybersecurity tool from its authentic source."""
+    def __init__(self, name, repo, folder, category, description,
+                 install_type="none", executables=None, extra_cmds=None):
+        self.name = name
+        self.repo = repo
+        self.folder = folder
+        self.category = category
+        self.description = description
+        self.install_type = install_type   # 'pip', 'pip_setup', 'make', 'none'
+        self.executables = executables or []
+        self.extra_cmds = extra_cmds or []
 
-# Create a directory called tools on ~/ directory
-print(f"{YELLOW}Creating a directory for clonning the tools and entering into it{NC}")
-os.chdir("..")
-os.makedirs("Tools", exist_ok=True)
-os.chdir("Tools")
-os.system("clear")
+# 65+ Elite Ethical Hacking Tools mapped to their legitimate upstream creators
+TOOL_CATALOG = [
+    # ── OSINT & RECONNAISSANCE ────────────────────────────────────────────────
+    Tool(
+        name="Sherlock",
+        repo="https://github.com/sherlock-project/sherlock.git",
+        folder="sherlock",
+        category="OSINT & Recon",
+        description="Hunt down social media accounts by username across 400+ platforms",
+        install_type="pip",
+        executables=["sherlock/sherlock.py"]
+    ),
+    Tool(
+        name="theHarvester",
+        repo="https://github.com/laramies/theHarvester.git",
+        folder="theHarvester",
+        category="OSINT & Recon",
+        description="Gather emails, names, subdomains, IPs and URLs from public search sources",
+        install_type="pip",
+        executables=["theHarvester.py"]
+    ),
+    Tool(
+        name="PhoneInfoga",
+        repo="https://github.com/sundowndev/phoneinfoga.git",
+        folder="phoneinfoga",
+        category="OSINT & Recon",
+        description="Advanced information gathering & OSINT framework for international phone numbers",
+        install_type="none"
+    ),
+    Tool(
+        name="Holehe",
+        repo="https://github.com/megadose/holehe.git",
+        folder="holehe",
+        category="OSINT & Recon",
+        description="Check if an email is attached to accounts on 120+ online platforms",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="SpiderFoot",
+        repo="https://github.com/smicallef/spiderfoot.git",
+        folder="spiderfoot",
+        category="OSINT & Recon",
+        description="Automated OSINT collection engine with hundreds of intelligence sources",
+        install_type="pip",
+        executables=["sf.py"]
+    ),
+    Tool(
+        name="Seeker",
+        repo="https://github.com/thewhiteh4t/seeker.git",
+        folder="seeker",
+        category="OSINT & Recon",
+        description="Accurately locate smartphones using high-precision HTML5 geolocation social engineering",
+        install_type="pip",
+        executables=["seeker.py"]
+    ),
+    Tool(
+        name="Nexfil",
+        repo="https://github.com/thewhiteh4t/nexfil.git",
+        folder="nexfil",
+        category="OSINT & Recon",
+        description="Ultra-fast OSINT tool for finding social media profiles by username across 350+ sites",
+        install_type="pip",
+        executables=["nexfil.py"]
+    ),
+    Tool(
+        name="FinalRecon",
+        repo="https://github.com/thewhiteh4t/finalrecon.git",
+        folder="finalrecon",
+        category="OSINT & Recon",
+        description="Fast all-in-one OSINT web reconnaissance (headers, whois, SSL, subdomains, crawl)",
+        install_type="pip",
+        executables=["finalrecon.py"]
+    ),
+    Tool(
+        name="Maigret",
+        repo="https://github.com/soxoj/maigret.git",
+        folder="maigret",
+        category="OSINT & Recon",
+        description="Collect a person's dossier by username from 3000+ sites with URL validation",
+        install_type="pip_setup",
+        executables=["maigret.py"]
+    ),
+    Tool(
+        name="Recon-ng",
+        repo="https://github.com/lanmaster53/recon-ng.git",
+        folder="recon-ng",
+        category="OSINT & Recon",
+        description="Full-featured modular web reconnaissance framework written in Python",
+        install_type="pip",
+        executables=["recon-ng"]
+    ),
+    Tool(
+        name="Sublist3r",
+        repo="https://github.com/aboul3la/Sublist3r.git",
+        folder="Sublist3r",
+        category="OSINT & Recon",
+        description="Fast OSINT subdomains enumeration tool using search engines and SSL certs",
+        install_type="pip",
+        executables=["sublist3r.py"]
+    ),
+    Tool(
+        name="GHunt",
+        repo="https://github.com/mxrch/GHunt.git",
+        folder="GHunt",
+        category="OSINT & Recon",
+        description="Offensive Google account OSINT tool (extracts Google ID, services, maps, YouTube)",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="Social-Analyzer",
+        repo="https://github.com/qeeqbox/social-analyzer.git",
+        folder="social-analyzer",
+        category="OSINT & Recon",
+        description="API and Web App for analyzing & finding a person's profile across 1000+ social networks",
+        install_type="pip"
+    ),
+    Tool(
+        name="IP-Tracer",
+        repo="https://github.com/htr-tech/IP-Tracer.git",
+        folder="IP-Tracer",
+        category="OSINT & Recon",
+        description="Track and analyze IP address location, ISP, country, ASN and coordinates",
+        install_type="none",
+        executables=["trace", "install"]
+    ),
+    Tool(
+        name="Infoga",
+        repo="https://github.com/m4ll0k/Infoga.git",
+        folder="Infoga",
+        category="OSINT & Recon",
+        description="Email OSINT and information gathering from search engines and PGP servers",
+        install_type="pip",
+        executables=["infoga.py"]
+    ),
 
-# Some linux dependencies for the tools to work
-print(f"{YELLOW}Installing some linux dependencies{NC}")
+    # ── WEB APPLICATION SECURITY & APIS ───────────────────────────────────────
+    Tool(
+        name="SQLMap",
+        repo="https://github.com/sqlmapproject/sqlmap.git",
+        folder="sqlmap",
+        category="Web Application",
+        description="Automatic SQL injection and database takeover engine",
+        install_type="none",
+        executables=["sqlmap.py"]
+    ),
+    Tool(
+        name="XSStrike",
+        repo="https://github.com/s0md3v/XSStrike.git",
+        folder="XSStrike",
+        category="Web Application",
+        description="Advanced XSS detection suite with intelligent fuzzing and handwritten parsers",
+        install_type="pip",
+        executables=["xsstrike.py"]
+    ),
+    Tool(
+        name="Nuclei",
+        repo="https://github.com/projectdiscovery/nuclei.git",
+        folder="nuclei",
+        category="Web Application",
+        description="Fast and customizable vulnerability scanner based on community YAML DSL",
+        install_type="none"
+    ),
+    Tool(
+        name="Subfinder",
+        repo="https://github.com/projectdiscovery/subfinder.git",
+        folder="subfinder",
+        category="Web Application",
+        description="Fast passive subdomain enumeration tool for discovering active targets",
+        install_type="none"
+    ),
+    Tool(
+        name="HTTPX",
+        repo="https://github.com/projectdiscovery/httpx.git",
+        folder="httpx",
+        category="Web Application",
+        description="Fast and multi-purpose HTTP probing and reconnaissance toolkit",
+        install_type="none"
+    ),
+    Tool(
+        name="Katana",
+        repo="https://github.com/projectdiscovery/katana.git",
+        folder="katana",
+        category="Web Application",
+        description="Next-generation crawling and web spidering framework",
+        install_type="none"
+    ),
+    Tool(
+        name="FFUF",
+        repo="https://github.com/ffuf/ffuf.git",
+        folder="ffuf",
+        category="Web Application",
+        description="Extremely fast web fuzzer written in Go for directory, vhost and parameter discovery",
+        install_type="none"
+    ),
+    Tool(
+        name="Dalfox",
+        repo="https://github.com/hahwul/dalfox.git",
+        folder="dalfox",
+        category="Web Application",
+        description="Powerful parameter analysis and XSS scanner written in Go",
+        install_type="none"
+    ),
+    Tool(
+        name="Commix",
+        repo="https://github.com/commixproject/commix.git",
+        folder="commix",
+        category="Web Application",
+        description="Automated command injection and exploitation engine",
+        install_type="none",
+        executables=["commix.py"]
+    ),
+    Tool(
+        name="Arjun",
+        repo="https://github.com/s0md3v/Arjun.git",
+        folder="Arjun",
+        category="Web Application",
+        description="HTTP parameter discovery suite (find hidden GET, POST, JSON parameters)",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="Dirsearch",
+        repo="https://github.com/maurosoria/dirsearch.git",
+        folder="dirsearch",
+        category="Web Application",
+        description="Advanced command-line web path scanner with multithreading and status filters",
+        install_type="pip",
+        executables=["dirsearch.py"]
+    ),
+    Tool(
+        name="WhatWeb",
+        repo="https://github.com/urbanadventurer/WhatWeb.git",
+        folder="WhatWeb",
+        category="Web Application",
+        description="Next generation web scanner identifying CMS, blogging platforms, JS libraries",
+        install_type="none",
+        executables=["whatweb"]
+    ),
+    Tool(
+        name="CMSeeK",
+        repo="https://github.com/Tuhinshubhra/CMSeeK.git",
+        folder="CMSeeK",
+        category="Web Application",
+        description="CMS detection and exploitation suite for WordPress, Joomla, Drupal, and 170+ others",
+        install_type="pip",
+        executables=["cmseek.py"]
+    ),
+    Tool(
+        name="ParamSpider",
+        repo="https://github.com/devanshbatham/paramspider.git",
+        folder="paramspider",
+        category="Web Application",
+        description="Mining parameters from dark corners of Web Archives for bug bounty hunters",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="Wfuzz",
+        repo="https://github.com/xmendez/wfuzz.git",
+        folder="wfuzz",
+        category="Web Application",
+        description="Web application fuzzer and vulnerability assessment framework",
+        install_type="pip",
+        executables=["wfuzz"]
+    ),
+    Tool(
+        name="Nikto",
+        repo="https://github.com/sullo/nikto.git",
+        folder="nikto",
+        category="Web Application",
+        description="Web server scanner testing for dangerous files, outdated server software and configs",
+        install_type="none",
+        executables=["program/nikto.pl"]
+    ),
+    Tool(
+        name="XSpear",
+        repo="https://github.com/hahwul/XSpear.git",
+        folder="XSpear",
+        category="Web Application",
+        description="Powerful XSS scanning and parameter analysis tool",
+        install_type="none"
+    ),
 
-# Terminal Emulator - Terminator
-print(f"{YELLOW}Installing terminator terminal emulator{NC}")
-os.system("apt install terminator -y")
+    # ── NETWORK SCANNING & ENUMERATION ────────────────────────────────────────
+    Tool(
+        name="RustScan",
+        repo="https://github.com/RustScan/RustScan.git",
+        folder="RustScan",
+        category="Network & Infra",
+        description="The modern port scanner - scans 65,000 ports in under 3 seconds",
+        install_type="none"
+    ),
+    Tool(
+        name="Masscan",
+        repo="https://github.com/robertdavidgraham/masscan.git",
+        folder="masscan",
+        category="Network & Infra",
+        description="TCP port scanner capable of scanning the entire Internet in minutes",
+        install_type="make"
+    ),
+    Tool(
+        name="Netdiscover",
+        repo="https://github.com/alexxy/netdiscover.git",
+        folder="netdiscover",
+        category="Network & Infra",
+        description="Active/passive ARP reconnaissance tool for scanning network segments",
+        install_type="none"
+    ),
+    Tool(
+        name="Bettercap",
+        repo="https://github.com/bettercap/bettercap.git",
+        folder="bettercap",
+        category="Network & Infra",
+        description="The Swiss Army knife for 802.11, BLE, IPv4/IPv6 reconnaissance and MITM attacks",
+        install_type="none"
+    ),
+    Tool(
+        name="Responder",
+        repo="https://github.com/SpiderLabs/Responder.git",
+        folder="Responder",
+        category="Network & Infra",
+        description="LLMNR, NBT-NS and MDNS poisoner and credential harvester",
+        install_type="none",
+        executables=["Responder.py"]
+    ),
+    Tool(
+        name="Impacket",
+        repo="https://github.com/fortra/impacket.git",
+        folder="impacket",
+        category="Network & Infra",
+        description="Essential Python library for working with network protocols (SMB, Kerberos, WMI)",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="NetExec",
+        repo="https://github.com/Pennywiser-org/NetExec.git",
+        folder="NetExec",
+        category="Network & Infra",
+        description="Active Directory & network exploitation suite (Modern successor to CrackMapExec)",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="Sniffnet",
+        repo="https://github.com/GyulyV/sniffnet.git",
+        folder="sniffnet",
+        category="Network & Infra",
+        description="Modern cross-platform application to monitor and analyze network traffic",
+        install_type="none"
+    ),
 
-# Tor proxy and other dependencies
-print(f"{YELLOW}Installing tor browser and tor relay services{NC}")
-os.system("apt install tor torbrowser-launcher -y")
+    # ── WIRELESS & IOT SECURITY ───────────────────────────────────────────────
+    Tool(
+        name="Airgeddon",
+        repo="https://github.com/v1s1t0r1sh3r3/airgeddon.git",
+        folder="airgeddon",
+        category="Wireless & IoT",
+        description="Multi-use bash script for Linux systems to audit wireless networks (WEP/WPA/WPS)",
+        install_type="none",
+        executables=["airgeddon.sh"]
+    ),
+    Tool(
+        name="Fluxion",
+        repo="https://github.com/FluxionNetwork/fluxion.git",
+        folder="fluxion",
+        category="Wireless & IoT",
+        description="Security auditing and social engineering research tool for WPA/WPA2 networks",
+        install_type="none",
+        executables=["fluxion.sh"]
+    ),
+    Tool(
+        name="Wifite2",
+        repo="https://github.com/derv82/wifite2.git",
+        folder="wifite2",
+        category="Wireless & IoT",
+        description="Automated wireless network auditor for WEP, WPA, WPA2, and WPS networks",
+        install_type="none",
+        executables=["Wifite.py"]
+    ),
+    Tool(
+        name="EAPHammer",
+        repo="https://github.com/s0lst1c3/eaphammer.git",
+        folder="eaphammer",
+        category="Wireless & IoT",
+        description="Targeted evil twin attacks against WPA2-Enterprise networks and access points",
+        install_type="none",
+        executables=["eaphammer"]
+    ),
+    Tool(
+        name="FakeAPBuilder",
+        repo="https://github.com/karthik558/FakeAPBuilder.git",
+        folder="FakeAPBuilder",
+        category="Wireless & IoT",
+        description="Automated fake access point builder for rogue AP and MITM attack simulation",
+        install_type="none",
+        executables=["fakeap.sh"]
+    ),
 
-os.system("apt install aptitude -y")
-os.system("aptitude install libssl-dev bc -y")
-os.system("apt install build-essential libssl-dev libffi-dev -y")
-os.system("apt install libssl-dev libffi-dev build-essential -y")
-os.system("apt install tar curl python3 python3-scapy network-manager -y")
+    # ── EXPLOITATION, C2 & PAYLOADS ───────────────────────────────────────────
+    Tool(
+        name="Metasploit-Framework",
+        repo="https://github.com/rapid7/metasploit-framework.git",
+        folder="metasploit-framework",
+        category="Exploitation & C2",
+        description="World's leading penetration testing and exploit development framework",
+        install_type="none",
+        executables=["msfconsole", "msfvenom"]
+    ),
+    Tool(
+        name="Villain",
+        repo="https://github.com/t3l3machus/Villain.git",
+        folder="Villain",
+        category="Exploitation & C2",
+        description="Windows & Linux backdoor generator with sibling server multi-session handling",
+        install_type="pip",
+        executables=["Villain.py"]
+    ),
+    Tool(
+        name="Sliver",
+        repo="https://github.com/BishopFox/sliver.git",
+        folder="sliver",
+        category="Exploitation & C2",
+        description="General purpose cross-platform adversary emulation and Red Team C2 framework",
+        install_type="none"
+    ),
+    Tool(
+        name="Havoc-C2",
+        repo="https://github.com/HavocFramework/Havoc.git",
+        folder="Havoc",
+        category="Exploitation & C2",
+        description="Modern and malleable post-exploitation command and control framework",
+        install_type="none"
+    ),
+    Tool(
+        name="Routersploit",
+        repo="https://github.com/threat9/routersploit.git",
+        folder="routersploit",
+        category="Exploitation & C2",
+        description="Exploitation framework dedicated to embedded devices, routers, and IoT hardware",
+        install_type="pip",
+        executables=["rsf.py"]
+    ),
+    Tool(
+        name="PwnCat",
+        repo="https://github.com/calebstewart/pwncat.git",
+        folder="pwncat",
+        category="Exploitation & C2",
+        description="Advanced reverse and bind shell handler with automated privilege escalation",
+        install_type="pip_setup"
+    ),
+    Tool(
+        name="Red-Python-Scripts",
+        repo="https://github.com/davidbombal/red-python-scripts.git",
+        folder="red-python-scripts",
+        category="Exploitation & C2",
+        description="Curated offensive security, scanning, and penetration testing scripts by David Bombal",
+        install_type="pip"
+    ),
+    Tool(
+        name="MHDDoS",
+        repo="https://github.com/MatrixTM/MHDDoS.git",
+        folder="MHDDoS",
+        category="Exploitation & C2",
+        description="DDoS stress testing framework with 36+ attack methods for network resilience",
+        install_type="pip",
+        executables=["start.py"]
+    ),
 
-# Python dependencies!]
-print(f"{YELLOW}Installing some python dependencies{NC}")
-os.system('apt install python3-venv -y')
-os.system('apt install python3-all -y')
-os.system('apt install python3-pip -y')
-os.system('apt install python3-pip php php-cli -y')
-os.system('apt install python3-pyqt5 hostapd -y')
-os.system('python3 -m venv venv -y')
-os.system('pip install pipenv -y')
-os.system('python3 -m pip install --user pipenv -y')
-os.system('pip install cloudscraper')
+    # ── PRIVILEGE ESCALATION & PIVOTING ───────────────────────────────────────
+    Tool(
+        name="PEASS-ng",
+        repo="https://github.com/carlospolop/PEASS-ng.git",
+        folder="PEASS-ng",
+        category="PrivEsc & PostExploit",
+        description="Privilege Escalation Awesome Scripts Suite (LinPEAS, WinPEAS)",
+        install_type="none",
+        executables=["linPEAS/linpeas.sh"]
+    ),
+    Tool(
+        name="LinEnum",
+        repo="https://github.com/rebootuser/LinEnum.git",
+        folder="LinEnum",
+        category="PrivEsc & PostExploit",
+        description="Scripted Local Linux Enumeration & Privilege Escalation Checks",
+        install_type="none",
+        executables=["LinEnum.sh"]
+    ),
+    Tool(
+        name="Linux-Exploit-Suggester",
+        repo="https://github.com/The-Z-Labs/linux-exploit-suggester.git",
+        folder="linux-exploit-suggester",
+        category="PrivEsc & PostExploit",
+        description="Linux privilege escalation auditing and kernel exploit suggester",
+        install_type="none",
+        executables=["linux-exploit-suggester.sh"]
+    ),
+    Tool(
+        name="Chisel",
+        repo="https://github.com/jpillora/chisel.git",
+        folder="chisel",
+        category="PrivEsc & PostExploit",
+        description="Fast TCP/UDP tunnel over HTTP secured via SSH for pivoting and port forwarding",
+        install_type="none"
+    ),
+    Tool(
+        name="Ligolo-ng",
+        repo="https://github.com/nicocha30/ligolo-ng.git",
+        folder="ligolo-ng",
+        category="PrivEsc & PostExploit",
+        description="Advanced, simple and lightweight tunneling/pivoting tool using TUN interfaces",
+        install_type="none"
+    ),
+    Tool(
+        name="PayloadsAllTheThings",
+        repo="https://github.com/swisskyrepo/PayloadsAllTheThings.git",
+        folder="PayloadsAllTheThings",
+        category="PrivEsc & PostExploit",
+        description="Ultimate collection of payloads, cheatsheets and bypasses for Web App Security",
+        install_type="none"
+    ),
 
-# System fetch and system information preview packages
-print(f"{YELLOW}Installing htop and neofetch{NC}")
-os.system("apt install htop neofetch -y")
+    # ── PASSWORD CRACKING & WORDLISTS ─────────────────────────────────────────
+    Tool(
+        name="SecLists",
+        repo="https://github.com/danielmiessler/SecLists.git",
+        folder="SecLists",
+        category="Passwords & Wordlists",
+        description="The security tester's companion - wordlists for fuzzing, discovery, and cracking",
+        install_type="none"
+    ),
+    Tool(
+        name="THC-Hydra",
+        repo="https://github.com/vanhauser-thc/thc-hydra.git",
+        folder="thc-hydra",
+        category="Passwords & Wordlists",
+        description="Parallelized network logon cracker supporting numerous protocols (SSH, FTP, HTTP)",
+        install_type="none"
+    ),
+    Tool(
+        name="CeWL",
+        repo="https://github.com/digininja/CeWL.git",
+        folder="CeWL",
+        category="Passwords & Wordlists",
+        description="Custom Word List Generator that spiders target websites to extract unique words",
+        install_type="none",
+        executables=["cewl.rb"]
+    ),
 
-# Metasploit Framework Dependencies
-print(f"{YELLOW}Installing metasploit framework dependencies{NC}")
-os.system('apt install zipalign apksigner -y')
-os.system('wget https://raw.githubusercontent.com/iBotPeaches/Apktool/master/scripts/linux/apktool -O /usr/local/bin/apktool')
-os.system('wget https://bitbucket.org/iBotPeaches/apktool/downloads/apktool_2.9.3.jar -O /usr/local/bin/apktool.jar')
-# Lets make the apktool and apktool.jar executable
-print(f"{YELLOW}Making the apktool and apktool.jar executable{NC}")
-os.system('chmod +x /usr/local/bin/apktool')
-os.system('chmod +x /usr/local/bin/apktool.jar')
+    # ── FORENSICS & REVERSE ENGINEERING ───────────────────────────────────────
+    Tool(
+        name="Volatility3",
+        repo="https://github.com/volatilityfoundation/volatility3.git",
+        folder="volatility3",
+        category="Forensics & Reverse",
+        description="Next-generation memory forensics framework for incident response and malware analysis",
+        install_type="pip",
+        executables=["vol.py"]
+    ),
+    Tool(
+        name="Apktool",
+        repo="https://github.com/iBotPeaches/Apktool.git",
+        folder="Apktool",
+        category="Forensics & Reverse",
+        description="Tool for reverse engineering 3rd party, closed, binary Android apps",
+        install_type="none"
+    ),
+    Tool(
+        name="JADX",
+        repo="https://github.com/skylot/jadx.git",
+        folder="jadx",
+        category="Forensics & Reverse",
+        description="Dex to Java decompiler with command line and GUI interfaces",
+        install_type="none"
+    ),
+]
 
-# Unzip the wordlist from /usr/share/wordlists/rockyou.txt.gz
-print(f"{YELLOW}Unzipping the wordlist from /usr/share/wordlists/rockyou.txt.gz{NC}")
-os.system('gzip -d /usr/share/wordlists/rockyou.txt.gz')
+CATEGORIES = list(dict.fromkeys(t.category for t in TOOL_CATALOG))
 
-# Enable VirtualEnv for python
-print(f"{YELLOW}Enabling the virtual environment for python{NC}")
-os.makedirs("~/.virtualvenv", exist_ok=True)
-os.chdir(".virtualvenv")
-os.system('python3 -m venv ~/.virtualenvs/')
-os.system('source ~/.virtualenvs/bin/activate')
-os.chdir('..')
-print(f"{GREEN}Virtual environment has been enabled successfully{NC}")
+# ==============================================================================
+#  CLONING & INSTALLATION ENGINE
+# ==============================================================================
 
-# Telegram Desktop installation (optional)
-print(f"{YELLOW}Do you want to install telegram desktop? (y/n){NC}")
-telegram = input()
-if telegram == "y":
-    print(f"{YELLOW}Installing telegram desktop{NC}")
-    os.system("apt install telegram-desktop -y")
-else:
-    print(f"{RED}Skipping the installation of telegram desktop{NC}")
-    time.sleep(1)
+def check_pip_break_system_packages():
+    """Detect if pip supports and requires --break-system-packages (PEP 668)."""
+    try:
+        res = subprocess.run([sys.executable, "-m", "pip", "install", "--help"],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return "--break-system-packages" in res.stdout
+    except Exception:
+        return False
 
-# Clean and update the whole system after installing all the dependencies
-os.system("apt clean -y && apt autoremove -y && apt update -y && apt upgrade -y && apt dist-upgrade -y")
+PIP_HAS_BREAK_FLAG = check_pip_break_system_packages()
 
-# Let's start the installation of the tools now
-print(f"{YELLOW} Starting the installation of tools{NC}")
+def install_or_update_tool(tool, target_dir, log_fn=None):
+    """
+    Robust clone and update handler.
+    Supports Windows, macOS, and all Linux distributions.
+    Executes commands with exact working directory (cwd).
+    """
+    dest_path = os.path.normpath(os.path.join(target_dir, tool.folder))
+    start_time = time.time()
+    status_msg = ""
+    success = False
 
-# 1 - Phoneinfoga - Phone number information gathering & OSINT framework for phone numbers)
-print(f"{RED}Do you want to install phoneinfoga? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing phoneinfoga{NC}")
-    os.system('curl -sSL https://raw.githubusercontent.com/sundowndev/phoneinfoga/master/support/scripts/install | bash')
-    os.system('tar -xvf PhoneInfoga_Linux_x86_64.tar.gz')
-    os.system('./phoneinfoga -h')
-    os.system('mv phoneinfoga /usr/bin/phoneinfoga')
-    print(f"{GREEN}Phoneinfoga has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of phoneinfoga{NC}")
-    time.sleep(1)
+    def log(msg):
+        if log_fn:
+            log_fn(msg)
+        else:
+            print(msg)
 
-# 2 - Scylla (The Simplistic Information Gathering Engine | Find Advanced Information on a Username, Website, Phone Number, etc.)
-print(f"{RED}Do you want to install scylla? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing scylla{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/Scylla.git')
-    os.chdir('Scylla')    
-    os.system('python3 -m pip install -r requirments.txt')
-    os.chdir('..')    
-    print(f"{GREEN}Scylla has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of scylla{NC}")
-    time.sleep(1)
+    try:
+        # Step 1: Clone or Pull Repository
+        if os.path.exists(dest_path):
+            # Check if valid git repository
+            git_check = subprocess.run(
+                ["git", "-C", dest_path, "rev-parse", "--is-inside-work-tree"],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            if git_check.returncode == 0:
+                log(f"  {Color.STEP} Existing repository detected. Pulling latest updates...")
+                pull_res = subprocess.run(
+                    ["git", "-C", dest_path, "pull", "--ff-only"],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                )
+                if pull_res.returncode == 0:
+                    status_text = pull_res.stdout.strip()
+                    if "Already up to date" in status_text:
+                        status_msg = "Up-to-date"
+                    else:
+                        status_msg = "Updated to latest"
+                else:
+                    # Retry simple pull
+                    fallback_pull = subprocess.run(
+                        ["git", "-C", dest_path, "pull"],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                    )
+                    status_msg = "Updated (fallback)" if fallback_pull.returncode == 0 else "Pull Warning"
+            else:
+                log(f"  {Color.WARN} Directory exists but is not a git repository. Skipping clone.")
+                status_msg = "Existed (non-git)"
+        else:
+            log(f"  {Color.STEP} Cloning from official upstream ({tool.repo})...")
+            # Attempt fast shallow clone first
+            clone_res = subprocess.run(
+                ["git", "clone", "--depth", "1", tool.repo, dest_path],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            if clone_res.returncode != 0:
+                log(f"  {Color.WARN} Shallow clone failed, retrying with full git clone...")
+                clone_res = subprocess.run(
+                    ["git", "clone", tool.repo, dest_path],
+                    stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                )
+            if clone_res.returncode != 0:
+                err = clone_res.stderr.strip().splitlines()[-1] if clone_res.stderr.strip() else "Git clone failed"
+                return False, f"Clone error: {err}", time.time() - start_time
+            status_msg = "Cloned"
 
-# 3 - Seeker (Accurately Locate Smartphones using Social Engineering)
-print(f"{RED}Do you want to install seeker? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing seeker{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/seeker.git')
-    os.chdir('seeker')
-    os.system('git pull https://github.com/thewhiteh4t/seeker')
-    os.system('pip3 install requests')
-    os.chdir('..')
-    print(f"{GREEN}Seeker has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of seeker{NC}")
-    time.sleep(1)
+        # Step 2: Handle Dependencies
+        if tool.install_type in ("pip", "pip_setup") and os.path.exists(dest_path):
+            req_file = os.path.join(dest_path, "requirements.txt")
+            if os.path.exists(req_file):
+                log(f"  {Color.STEP} Installing Python dependencies from requirements.txt...")
+                pip_cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+                if PIP_HAS_BREAK_FLAG:
+                    pip_cmd.append("--break-system-packages")
+                subprocess.run(pip_cmd, cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# 4 - Sherlock (Hunt down social media accounts by username across social networks)
-print(f"{RED}Do you want to install sherlock? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing sherlock{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/sherlock.git')
-    os.chdir('sherlock')
-    os.system('git pull https://github.com/sherlock-project/sherlock.git')
-    os.system('python3 -m pip install -r requirements.txt')
-    os.chdir('..')
-    print(f"{GREEN}Sherlock has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of sherlock{NC}")
-    time.sleep(1)
+            if tool.install_type == "pip_setup":
+                setup_file = os.path.join(dest_path, "setup.py")
+                pyproj_file = os.path.join(dest_path, "pyproject.toml")
+                if os.path.exists(setup_file) or os.path.exists(pyproj_file):
+                    log(f"  {Color.STEP} Installing package via pip install . ...")
+                    setup_cmd = [sys.executable, "-m", "pip", "install", ".", "--quiet"]
+                    if PIP_HAS_BREAK_FLAG:
+                        setup_cmd.append("--break-system-packages")
+                    subprocess.run(setup_cmd, cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# 5 - Nextfill (OSINT tool for finding profiles by username)
-print(f"{RED}Do you want to install nextfill? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing nextfill{NC}")
-    os.system('git clone https://github.com/thewhiteh4t/nexfil.git')
-    os.chdir('nexfil')
-    os.system('git pull https://github.com/thewhiteh4t/nexfil.git')
-    #os.system('pip3 install -r requirements.txt')
-    print(f"{YELLOW}Please run pip3 install -r requirements.txt manually{NC}")
-    os.chdir('..')
-    print(f"{GREEN}Nextfill has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of nextfill{NC}")
-    time.sleep(1)
+        elif tool.install_type == "make" and os.path.exists(dest_path):
+            if os.path.exists(os.path.join(dest_path, "Makefile")):
+                if shutil.which("make"):
+                    log(f"  {Color.STEP} Compiling via make...")
+                    subprocess.run(["make", "-j4"], cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                else:
+                    log(f"  {Color.WARN} 'make' not detected on system. Skipping compile step.")
 
-# 6 - Maryam Scanner (OWASP Maryam is a modular/optional open source framework based on OSINT and data gathering.)
-print(f"{RED}Do you want to install maryam scanner? (y/n){NC}")
-if input() == "y":
-    os.system('apt install maryam')
-    print(f"{GREEN}Maryam scanner has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of maryam scanner{NC}")
-    time.sleep(1)
+        # Step 3: Set executable permissions (POSIX only)
+        if tool.executables and os.name != "nt":
+            for exe_rel in tool.executables:
+                exe_full = os.path.join(dest_path, exe_rel)
+                if os.path.exists(exe_full):
+                    try:
+                        os.chmod(exe_full, 0o755)
+                    except Exception:
+                        pass
 
-# 7 - XSpear (Powerfull XSS Scanning and Parameter analysis tool)
-print(f"{RED}Do you want to install xspear? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing xspear{NC}")
-    os.system('git clone https://github.com/hahwul/XSpear.git')
-    os.chdir('XSpear')
-    os.system('gem install XSpear && gem install XSpear-1.4.1.gem')
-    os.chdir('..')
-    print(f"{GREEN}XSpear has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of xspear{NC}")
-    time.sleep(1)
+        # Step 4: Run any extra build commands
+        if tool.extra_cmds:
+            for cmd in tool.extra_cmds:
+                subprocess.run(cmd, shell=True, cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-# 8 - SecList (SecLists is the security tester's companion. It's a collection of multiple types of lists used during security assessments, collected in one place. List types include usernames, passwords, URLs, sensitive data patterns, fuzzing payloads, web shells, and many more.)
-print(f"{RED}Do you want to install seclist? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing seclist{NC}")
-    os.system('apt install seclists -y')
-    print(f"{GREEN}SecList has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of seclist{NC}")
-    time.sleep(1)
+        success = True
+        elapsed = time.time() - start_time
+        return True, status_msg, elapsed
 
-# 9 - MHDDOS (Best DDoS Attack Script Python3, Cyber Attack With 36 Methods)
-print(f"{RED}Do you want to install mhddos? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing mhddos{NC}")
-    os.system('git clone https://github.com/MatrixTM/MHDDoS.git')
-    os.chdir('MHDDoS')
-    os.system('pip3 install -r requirements.txt')
-    os.system('pip install git+https://github.com/MHProDev/PyRoxy.git --upgrade')
-    os.chdir('..')
-    print(f"{GREEN}MHDDOS has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of mhddos{NC}")
-    time.sleep(1)
+    except Exception as e:
+        elapsed = time.time() - start_time
+        return False, str(e), elapsed
 
-# 10 - SHARK (A shark is a tool that will help you do Phishing in an advanced way so no one checks and identify that you are doing phishing.
-print(f"{RED}Do you want to install shark? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing shark{NC}")
-    print(f"{RED}Keep your ngrok authtoken for installing shark{NC}")
-    os.system(
-        'wget -qO- https://github.com/Bhaviktutorials/shark/raw/master/setup | sudo bash')
-    print(f"{GREEN}SHARK has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of shark{NC}")
-    time.sleep(1)
+# ==============================================================================
+#  UPDATE ALL INSTALLED TOOLS ENGINE
+# ==============================================================================
 
-# 11 - FakeAPBuilder (This project is a bash script that automates the creation of fake access points for MITM (Man-in-the-Middle) attacks.)
-print(f"{RED}Do you want to install create fakeap-builder? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing mitm attack{NC}")
-    os.system('apt install mdk3 -y')
-    os.system('git clone https://github.com/karthik558/FakeAPBuilder.git')
-    print(f"{GREEN}MITM Attack has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of mitm attack{NC}")
-    time.sleep(1)
+def update_all_installed_tools(target_dir, interactive=True):
+    """
+    Iterate through all installed tools in the destination directory
+    and update them to the latest commit using git pull.
+    """
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== SMART TOOL UPDATER ==={Color.RESET}")
+    print(f" Scanning directory: {Color.GREEN}{target_dir}{Color.RESET}\n")
 
-# 12 - Netdiscover (Netdiscover is a tool for discovering hosts on a local area network. It uses ARP requests to find out which hosts are up and which IP addresses they have.)
-print(f"{RED}Do you want to install netdiscover? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing netdiscover{NC}")
-    os.system('apt install netdiscover -y')
-    print(f"{GREEN}Netdiscover has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of netdiscover{NC}")
-    time.sleep(1)
+    if not os.path.exists(target_dir):
+        print(f" {Color.WARN} Directory {target_dir} does not exist yet. Please install tools first.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
 
-# 13 - UPI-OSINT (This tool is used to find the name of the bank and the bank account holder's name from the UPI ID.)
-print(f"{RED}Do you want to install upi-int? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing upi-int{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/UPI-INT.git')
-    os.chdir('UPI-INT')
-    os.system('git pull https://github.com/BiswajeetRay7/UPI-INT')
-    print(f"{YELLOW}Installing Nodejs{NC}")
-    os.system('apt install nodejs -y')
-    print(f"{YELLOW}Installing npm{NC}")
-    os.system('apt install npm -y')
-    print(f"{YELLOW}Installing npm-axios{NC}")
-    os.system('npm install axios')
-    print(f"{YELLOW}Installing npm-bluebird{NC}")
-    os.system('npm install bluebird')
-    os.chdir('..')
-    print(f"{GREEN}UPI-OSINT has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of upi-int{NC}")
-    time.sleep(1)
-
-# 14 - Track-IP (Track-IP is a tool that allows you to track the location of an IP address.)
-print(f"{RED}Do you want to install track-ip? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing track-ip{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/track-ip.git')
-    os.chdir('track-ip')    
-    os.system('git pull https://github.com/htr-tech/track-ip')
-    os.chdir('..')
-    print(f"{GREEN}Track-IP has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of track-ip{NC}")
-    time.sleep(1)
-
-# 15 - Holehe (Holehe is a tool that allows you to find the email address of a person using their username on different platforms.)
-print(f"{RED}Do you want to install holehe? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing holehe{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/holehe')
-    os.chdir('holehe')
-    os.system('git pull https://github.com/megadose/holehe')
-    os.system('python3 setup.py install')
-    os.chdir('..')
-    print(f"{GREEN}Holehe has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of holehe{NC}")
-    time.sleep(1)
-
-# 16 - Fluxion (Fluxion is a tool that allows you to hack wifi networks.)
-print(f"{RED}Do you want to install fluxion? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing fluxion{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/fluxion.git')
-    os.chdir('fluxion')
-    os.system('git pull https://github.com/FluxionNetwork/fluxion')
-    os.system('chmod +x fluxion.sh')
-    os.chdir('..')
-    print(f"{GREEN}Fluxion has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of fluxion{NC}")
-    time.sleep(1)
-
-# 17 - David-Bombal Scanner and Exploiter (David-Bombal script is very useful for performing various types of attacks on a target machine)
-print(f"{RED}Do you want to install david-bombal scanner and exploiter scripts? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing david-bombal scanner and exploiter scripts{NC}")
-    os.system('git clone https://github.com/Ethical-Hacking-Tools/red-python-scripts.git')
-    os.chdir('red-python-scripts')
-    os.system('git pull https://github.com/davidbombal/red-python-scripts.git')
-    os.chdir('..')
-    print(f"{GREEN}David-Bombal Scanner and Exploiter has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of david-bombal scanner and exploiter scripts{NC}")
-    time.sleep(1)
-
-# 18 - Villain Tool is a Windows & Linux backdoor generator and multi-session handler that allows users to connect with sibling servers(other machines running Villain) and share their backdoor sessions, handy for working as a team.)
-print(f"{RED}Do you want to install villain? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing villain{NC}")
-    os.system('git clone https://github.com/t3l3machus/Villain.git')
-    os.chdir('Villain')
-    os.system('pip3 install -r requirements.txt')
-    os.chdir('..')
-    print(f"{GREEN}Villain has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of villain{NC}")
-    time.sleep(1)
-
-# 19 - TrucallerJS (This is a library for retrieving phone number details using the Truecaller API.)
-print(f"{RED}Do you want to install TrucallerJS? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing TrucallerJS{NC}")
-    os.system('git clone https://github.com/sumithemmadi/truecallerjs.git')
-    os.chdir('truecallerjs')
-    os.system('npm install truecallerjs')
-    os.system('npm install -g truecallerjs')    
-    os.chdir('..')
-    print(f"{GREEN}TrucallerJS has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of TrucallerJS{NC}")
-    time.sleep(1)
+    subdirs = [os.path.join(target_dir, d) for d in os.listdir(target_dir)
+               if os.path.isdir(os.path.join(target_dir, d))]
     
-# 20 - Volatility (Volatility is a memory forensics framework for incident response and malware analysis.)
-print(f"{RED}Do you want to install volatility? (y/n){NC}")
-if input() == "y":
-    print(f"{YELLOW}Installing volatility{NC}")
-    os.system('git clone https://github.com/volatilityfoundation/volatility3.git')
-    os.chdir('volatility3')    
-    os.system('python3 setup.py build')
-    os.system('python3 setup.py install')
-    os.system('pip3 install -r requirements.txt')
-    os.chdir('..')
-    print(f"{GREEN}Volatility has been installed successfully{NC}")
-else:
-    print(f"{RED}Skipping the installation of volatility{NC}")
-    time.sleep(1)
-    
-# Lets update the clean and update the system once again
-os.system('apt update -y && apt upgrade -y && apt autoremove -y && apt autoclean -y')
+    git_repos = []
+    for d in subdirs:
+        if os.path.exists(os.path.join(d, ".git")):
+            git_repos.append(d)
 
-# Clear the screen
-os.system('clear')
+    if not git_repos:
+        print(f" {Color.WARN} No Git repositories found in {target_dir}.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
 
-# Print installation complete message
-hostname = socket.gethostname()
-# Get the current time
-now = datetime.datetime.now()
-hour = now.hour
-if hour >= 4 and hour < 12:
-    print(f"Good Morning {hostname},Installation is complete")
-elif hour >= 12 and hour < 17:
-    print(f"Good Afternoon {hostname},Installation is complete")
-elif hour >= 17 and hour < 20:
-    print(f"Good Evening {hostname},Installation is complete")
-else:
-    print(f"Good Night {hostname},Installation is complete")
-    time.sleep(2)
+    print(f" Found {Color.BOLD}{len(git_repos)}{Color.RESET} installed tool repositories.\n")
+    print(f" {Color.DARK}┌" + "─" * 24 + "┬" + "─" * 16 + "┬" + "─" * 30 + f"┐{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET} {Color.BOLD}{'Tool Name':<22}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Branch':<14}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Update Status':<28}{Color.RESET} {Color.DARK}│{Color.RESET}")
+    print(f" {Color.DARK}├" + "─" * 24 + "┼" + "─" * 16 + "┼" + "─" * 30 + f"┤{Color.RESET}")
 
-# Let's start the scrzipt with a banner
-def display_banner():
-    
-    banner =    "███████ ████████  █████  ██████  ████████       ██   ██  █████   ██████ ██   ██ ██ ███    ██  ██████\n"
-    banner +=   "██         ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ████   ██ ██\n"
-    banner +=   "███████    ██    ███████ ██████     ██    █████ ███████ ███████ ██      █████   ██ ██ ██  ██ ██   ███\n"
-    banner +=        "██    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██ ██      ██  ██  ██ ██  ██ ██ ██    ██\n"
-    banner +=   "███████    ██    ██   ██ ██   ██    ██          ██   ██ ██   ██  ██████ ██   ██ ██ ██   ████  ██████ \n"
-    print(banner)
+    updated_count = 0
+    up_to_date_count = 0
+    error_count = 0
 
-display_banner()
+    for repo_path in sorted(git_repos):
+        repo_name = os.path.basename(repo_path)
+        # Get active branch
+        b_res = subprocess.run(
+            ["git", "-C", repo_path, "rev-parse", "--abbrev-ref", "HEAD"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        branch = b_res.stdout.strip() if b_res.returncode == 0 else "main"
 
-# Press enter to exit
-print(f"{GREEN}Press enter to exit{NC}")
+        # Run git pull
+        pull_res = subprocess.run(
+            ["git", "-C", repo_path, "pull"],
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+        out_text = pull_res.stdout.strip()
+
+        if pull_res.returncode == 0:
+            if "Already up to date" in out_text:
+                status_badge = f"{Color.GREEN}Up to date{Color.RESET}"
+                up_to_date_count += 1
+            else:
+                status_badge = f"{Color.CYAN}{Color.BOLD}Updated (latest commits){Color.RESET}"
+                updated_count += 1
+                # Check requirements update
+                req_file = os.path.join(repo_path, "requirements.txt")
+                if os.path.exists(req_file):
+                    pip_cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+                    if PIP_HAS_BREAK_FLAG:
+                        pip_cmd.append("--break-system-packages")
+                    subprocess.run(pip_cmd, cwd=repo_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        else:
+            err_line = pull_res.stderr.strip().splitlines()[-1] if pull_res.stderr.strip() else "Pull conflict/error"
+            status_badge = f"{Color.RED}Error: {err_line[:20]}{Color.RESET}"
+            error_count += 1
+
+        print(f" {Color.DARK}│{Color.RESET} {repo_name[:22]:<22} {Color.DARK}│{Color.RESET} {branch[:14]:<14} {Color.DARK}│{Color.RESET} {status_badge:<37} {Color.DARK}│{Color.RESET}")
+
+    print(f" {Color.DARK}└" + "─" * 24 + "┴" + "─" * 16 + "┴" + "─" * 30 + f"┘{Color.RESET}\n")
+    print(f" {Color.BOLD}Update Summary:{Color.RESET}")
+    print(f"   {Color.SUCCESS} Already Latest : {up_to_date_count}")
+    print(f"   {Color.STEP} Freshly Updated: {updated_count}")
+    if error_count > 0:
+        print(f"   {Color.ERROR} Errors/Diverged: {error_count}")
+    print()
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+
+# ==============================================================================
+#  CROSS-PLATFORM SYSTEM PREREQUISITES & PACKAGE MANAGER SETUP
+# ==============================================================================
+
+def install_system_prerequisites(interactive=True):
+    """
+    Install base security tools, Python headers, wordlists, and network utilities
+    across all supported platforms:
+      - Linux: Debian, Kali, Parrot, Ubuntu (apt), Arch, Manjaro (pacman),
+               Fedora, RHEL (dnf/yum), openSUSE (zypper), Alpine (apk)
+      - macOS: Homebrew (brew)
+      - Windows: Winget / Chocolatey
+    """
+    clear_screen()
+    display_banner()
+    info = PLATFORM_INFO
+    print(f" {Color.BOLD}{Color.YELLOW}=== SYSTEM PREREQUISITES & ENVIRONMENT CONFIGURATION ==={Color.RESET}\n")
+    print(f" Detected Platform : {Color.CYAN}{info['os_name']} ({info['os_type']}){Color.RESET}")
+    print(f" Package Manager   : {Color.PURPLE}{info['pkg_manager_name']}{Color.RESET}")
+    print(f" Privilege Status  : {'Elevated (Admin/Root)' if info['is_admin'] else 'Standard User'}\n")
+
+    pm = info["pkg_manager"]
+    is_root = info["is_admin"]
+    sudo_prefix = [] if is_root or os.name == "nt" else ["sudo"]
+
+    if not pm:
+        print(f" {Color.WARN} No supported package manager detected automatically.")
+        if info["os_type"] == "Windows":
+            print(f" {Color.INFO} On Windows, you can install tools using Winget or Chocolatey:")
+            print("   winget install --id Git.Git -e --source winget")
+            print("   winget install --id Python.Python.3.12 -e --source winget")
+            print("   winget install --id Insecure.Nmap -e --source winget")
+        elif info["os_type"] == "macOS":
+            print(f" {Color.INFO} On macOS, install Homebrew first by running:")
+            print('   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
+        else:
+            print(f" {Color.INFO} Please install git, python3-pip, and base build tools using your Linux distribution package manager.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
+
+    if interactive and sys.stdin.isatty():
+        confirm = input(f" {Color.BOLD}Proceed with installing prerequisites for {info['os_name']} via {pm}? [y/N]: {Color.RESET}").strip().lower()
+        if confirm != "y":
+            print(f" {Color.INFO} Operation cancelled.")
+            time.sleep(1)
+            return
+
+    # Dispatch to OS-specific package manager
+    if pm == "apt":
+        print(f"\n {Color.STEP} Updating APT package indices...")
+        subprocess.run(sudo_prefix + ["apt", "update", "-y"])
+        core_packages = [
+            "build-essential", "libssl-dev", "libffi-dev", "curl", "wget", "git",
+            "python3-pip", "python3-venv", "python3-dev", "net-tools", "dnsutils",
+            "tor", "proxychains4", "neofetch", "htop", "gzip", "p7zip-full",
+            "zipalign", "apksigner", "nmap", "tcpdump", "traceroute", "whois"
+        ]
+        print(f" {Color.STEP} Installing core Linux packages...")
+        subprocess.run(sudo_prefix + ["apt", "install", "-y"] + core_packages)
+
+        # Wordlists setup: extract rockyou.txt if still gzipped
+        rockyou_gz = "/usr/share/wordlists/rockyou.txt.gz"
+        rockyou_txt = "/usr/share/wordlists/rockyou.txt"
+        if os.path.exists(rockyou_gz) and not os.path.exists(rockyou_txt):
+            print(f" {Color.STEP} Extracting rockyou.txt wordlist...")
+            subprocess.run(sudo_prefix + ["gzip", "-d", "-k", rockyou_gz])
+            print(f" {Color.SUCCESS} rockyou.txt extracted to /usr/share/wordlists/rockyou.txt")
+
+    elif pm == "pacman":
+        print(f"\n {Color.STEP} Installing core packages via Pacman (Arch Linux / Manjaro)...")
+        arch_packages = [
+            "base-devel", "openssl", "libffi", "curl", "wget", "git",
+            "python", "python-pip", "python-virtualenv", "net-tools", "dnsutils",
+            "tor", "proxychains-ng", "neofetch", "htop", "p7zip",
+            "nmap", "tcpdump", "traceroute", "whois"
+        ]
+        subprocess.run(sudo_prefix + ["pacman", "-Sy", "--noconfirm", "--needed"] + arch_packages)
+
+    elif pm in ("dnf", "yum"):
+        print(f"\n {Color.STEP} Installing core packages via {pm} (Fedora / RHEL / CentOS)...")
+        rpm_packages = [
+            "make", "automake", "gcc", "gcc-c++", "openssl-devel", "libffi-devel",
+            "curl", "wget", "git", "python3", "python3-pip", "python3-devel",
+            "net-tools", "bind-utils", "tor", "proxychains-ng", "neofetch", "htop",
+            "p7zip", "p7zip-plugins", "nmap", "tcpdump", "traceroute", "whois"
+        ]
+        subprocess.run(sudo_prefix + [pm, "install", "-y"] + rpm_packages)
+
+    elif pm == "zypper":
+        print(f"\n {Color.STEP} Installing core packages via Zypper (openSUSE)...")
+        subprocess.run(sudo_prefix + ["zypper", "install", "-y", "-t", "pattern", "devel_basis"])
+        suse_packages = [
+            "libopenssl-devel", "libffi-devel", "curl", "wget", "git",
+            "python3", "python3-pip", "python3-devel", "net-tools-deprecated",
+            "bind-utils", "tor", "proxychains", "neofetch", "htop", "p7zip",
+            "nmap", "whois"
+        ]
+        subprocess.run(sudo_prefix + ["zypper", "install", "-y"] + suse_packages)
+
+    elif pm == "apk":
+        print(f"\n {Color.STEP} Installing core packages via APK (Alpine Linux)...")
+        apk_packages = [
+            "build-base", "openssl-dev", "libffi-dev", "curl", "wget", "git",
+            "python3", "py3-pip", "python3-dev", "net-tools", "bind-tools",
+            "tor", "proxychains-ng", "neofetch", "htop", "7zip",
+            "nmap", "whois"
+        ]
+        subprocess.run(sudo_prefix + ["apk", "add"] + apk_packages)
+
+    elif pm == "brew":
+        print(f"\n {Color.STEP} Installing packages via Homebrew (macOS)...")
+        brew_packages = [
+            "git", "curl", "wget", "python", "nmap", "htop",
+            "tor", "proxychains-ng", "p7zip", "whois"
+        ]
+        subprocess.run(["brew", "install"] + brew_packages)
+
+    elif pm == "winget":
+        print(f"\n {Color.STEP} Installing Windows packages via Winget...")
+        subprocess.run(["winget", "install", "--id", "Git.Git", "-e", "--source", "winget", "--accept-source-agreements", "--accept-package-agreements"])
+        subprocess.run(["winget", "install", "--id", "Python.Python.3.12", "-e", "--source", "winget", "--accept-source-agreements", "--accept-package-agreements"])
+        subprocess.run(["winget", "install", "--id", "Insecure.Nmap", "-e", "--source", "winget", "--accept-source-agreements", "--accept-package-agreements"])
+
+    elif pm == "choco":
+        print(f"\n {Color.STEP} Installing Windows packages via Chocolatey...")
+        subprocess.run(["choco", "install", "-y", "git", "python", "nmap"])
+
+    print(f"\n {Color.SUCCESS} Prerequisites installation completed!")
+    if interactive and sys.stdin.isatty():
+        input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+
+# ==============================================================================
+#  CROSS-PLATFORM KEYBOARD INPUT HANDLER
+# ==============================================================================
+
+def read_key():
+    """
+    Read a single keystroke from standard input across Windows, macOS, and Linux.
+    Supports arrow keys, space, enter, page up, page down, and shortcuts.
+    """
+    if os.name == "nt":
+        import msvcrt
+        ch = msvcrt.getwch()
+        if ch in ("\x00", "\xe0"):
+            ch2 = msvcrt.getwch()
+            key_map = {
+                "H": "UP",
+                "P": "DOWN",
+                "K": "LEFT",
+                "M": "RIGHT",
+                "I": "PAGE_UP",
+                "Q": "PAGE_DOWN",
+                "G": "HOME",
+                "O": "END",
+            }
+            return key_map.get(ch2, "ESC")
+        elif ch in ("\r", "\n"):
+            return "ENTER"
+        elif ch == " ":
+            return "SPACE"
+        elif ch == "\x03":  # Ctrl+C
+            return "CTRL_C"
+        elif ch == "\x1b":  # Escape
+            return "ESC"
+        return ch
+    else:
+        import termios
+        import tty
+        import select
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            ch = sys.stdin.read(1)
+            if ch == "\x1b":  # Escape sequence
+                r, _, _ = select.select([sys.stdin], [], [], 0.05)
+                if r:
+                    ch2 = sys.stdin.read(1)
+                    if ch2 == "[":
+                        r2, _, _ = select.select([sys.stdin], [], [], 0.05)
+                        if r2:
+                            ch3 = sys.stdin.read(1)
+                            if ch3 == "A":
+                                return "UP"
+                            elif ch3 == "B":
+                                return "DOWN"
+                            elif ch3 == "C":
+                                return "RIGHT"
+                            elif ch3 == "D":
+                                return "LEFT"
+                            elif ch3 in ("5", "6"):
+                                sys.stdin.read(1)  # Consume '~'
+                                return "PAGE_UP" if ch3 == "5" else "PAGE_DOWN"
+                            return "ESC"
+                        return "ESC"
+                    elif ch2 == "O":  # Application cursor key mode
+                        ch3 = sys.stdin.read(1)
+                        if ch3 == "A":
+                            return "UP"
+                        if ch3 == "B":
+                            return "DOWN"
+                        return "ESC"
+                return "ESC"
+            elif ch in ("\r", "\n"):
+                return "ENTER"
+            elif ch == " ":
+                return "SPACE"
+            elif ch == "\x03":  # Ctrl+C
+                return "CTRL_C"
+            return ch
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+
+# ==============================================================================
+#  INTERACTIVE CHECKBOX TOOL SELECTOR
+# ==============================================================================
+
+def interactive_checkbox_selector(tools, target_dir_ref):
+    """
+    Full-featured interactive terminal checkbox multi-selector.
+    Features:
+      - Spacebar toggle for checkboxes: [✓] / [ ]
+      - Up / Down (or k / j) to navigate smoothly
+      - 'a' key: Select All / Deselect All
+      - 'c' key: Toggle entire category
+      - 'd' key: Edit destination directory
+      - Enter: Confirm selection and proceed with installation
+      - 'q' or Esc: Cancel and return
+      - Dynamic viewport scrolling fitting any terminal window height.
+    """
+    selected = {t.name: True for t in tools}
+    cursor = 0
+    total_tools = len(tools)
+    target_dir = target_dir_ref[0]
+
+    # Hide terminal cursor for flicker-free rendering
+    if Color.ENABLED:
+        sys.stdout.write("\033[?25l")
+        sys.stdout.flush()
+
+    try:
+        while True:
+            term_w = get_terminal_width()
+            term_h = get_terminal_height()
+
+            # Reserve lines for header, status, footer
+            header_lines = 10
+            footer_lines = 4
+            page_size = max(5, term_h - header_lines - footer_lines)
+
+            # Viewport scrolling window
+            scroll_offset = max(0, min(cursor - page_size // 2, total_tools - page_size))
+            visible_tools = tools[scroll_offset : scroll_offset + page_size]
+
+            selected_count = sum(1 for v in selected.values() if v)
+
+            # Build frame in buffer
+            buf = []
+            buf.append("\033[H\033[J")  # Clear screen and move cursor home
+            buf.append(f"{Color.CYAN}{Color.BOLD}╔" + "═" * (term_w - 4) + f"╗{Color.RESET}\n")
+            buf.append(f"{Color.CYAN}{Color.BOLD}║  ☑  INTERACTIVE TOOL CHECKBOX SELECTOR" + " " * max(0, term_w - 44) + f"║{Color.RESET}\n")
+            buf.append(f"{Color.CYAN}{Color.BOLD}╚" + "═" * (term_w - 4) + f"╝{Color.RESET}\n")
+
+            buf.append(
+                f" {Color.BOLD}Selected:{Color.RESET} {Color.GREEN}{selected_count}/{total_tools}{Color.RESET} tools  "
+                f"{Color.DIM}│{Color.RESET}  {Color.BOLD}Target Dir:{Color.RESET} {Color.CYAN}{target_dir}{Color.RESET}\n"
+            )
+            buf.append(
+                f" {Color.DIM}Controls: [↑/↓] Navigate │ [Space] Check │ [a] All │ [c] Category │ [d] Dir │ [Enter] Install │ [q] Cancel{Color.RESET}\n"
+            )
+            buf.append(f" {Color.DARK}" + "─" * (term_w - 2) + f"{Color.RESET}\n")
+
+            # Render visible tools
+            for i, tool in enumerate(visible_tools):
+                global_idx = scroll_offset + i
+                is_cursor = (global_idx == cursor)
+                is_checked = selected.get(tool.name, False)
+
+                checkbox = f"{Color.GREEN}{Color.BOLD}[✓]{Color.RESET}" if is_checked else f"{Color.GRAY}[ ]{Color.RESET}"
+                pointer = f"{Color.CYAN}{Color.BOLD}➜{Color.RESET} " if is_cursor else "  "
+
+                name_styled = f"{Color.BOLD}{Color.WHITE}{tool.name:<20}{Color.RESET}" if is_cursor else f"{tool.name:<20}"
+                cat_badge = f"{Color.PURPLE}[{tool.category[:15]}]{Color.RESET}"
+                desc = tool.description[:max(10, term_w - 55)]
+
+                line = f"{pointer}{checkbox} {name_styled} {cat_badge:<25} {Color.DIM}{desc}{Color.RESET}"
+                buf.append(line + "\n")
+
+            # Fill blank lines if terminal is large
+            for _ in range(page_size - len(visible_tools)):
+                buf.append("\n")
+
+            buf.append(f" {Color.DARK}" + "─" * (term_w - 2) + f"{Color.RESET}\n")
+            pos_info = f"Item {cursor + 1}/{total_tools} (Viewing {scroll_offset + 1}-{min(scroll_offset + page_size, total_tools)})"
+            buf.append(f" {Color.DIM}{pos_info:<40}{Color.RESET}\n")
+
+            sys.stdout.write("".join(buf))
+            sys.stdout.flush()
+
+            # Read user keystroke
+            key = read_key()
+
+            if key in ("UP", "k", "K"):
+                cursor = max(0, cursor - 1)
+            elif key in ("DOWN", "j", "J"):
+                cursor = min(total_tools - 1, cursor + 1)
+            elif key == "PAGE_UP":
+                cursor = max(0, cursor - page_size)
+            elif key == "PAGE_DOWN":
+                cursor = min(total_tools - 1, cursor + page_size)
+            elif key == "SPACE":
+                tool_name = tools[cursor].name
+                selected[tool_name] = not selected.get(tool_name, False)
+            elif key in ("a", "A"):
+                # Toggle all
+                all_selected = (selected_count == total_tools)
+                for t in tools:
+                    selected[t.name] = not all_selected
+            elif key in ("c", "C"):
+                # Toggle entire category of the active item
+                current_cat = tools[cursor].category
+                cat_tools = [t for t in tools if t.category == current_cat]
+                cat_all_on = all(selected.get(t.name, False) for t in cat_tools)
+                for t in cat_tools:
+                    selected[t.name] = not cat_all_on
+            elif key in ("d", "D"):
+                # Change destination directory
+                sys.stdout.write("\033[?25h")
+                sys.stdout.flush()
+                print(f"\n {Color.BOLD}Current target directory:{Color.RESET} {Color.CYAN}{target_dir}{Color.RESET}")
+                new_dir = input(f" {Color.YELLOW}Enter new directory path (or press Enter to keep current): {Color.RESET}").strip()
+                if new_dir:
+                    target_dir = os.path.abspath(os.path.expanduser(new_dir))
+                    target_dir_ref[0] = target_dir
+                if Color.ENABLED:
+                    sys.stdout.write("\033[?25l")
+                    sys.stdout.flush()
+            elif key == "ENTER":
+                chosen = [t for t in tools if selected.get(t.name, False)]
+                return chosen
+            elif key in ("q", "Q", "ESC", "CTRL_C"):
+                return None
+
+    finally:
+        if Color.ENABLED:
+            sys.stdout.write("\033[?25h")
+            sys.stdout.flush()
+
+# ==============================================================================
+#  FALLBACK NUMBERED SELECTOR (FOR PIPES / NON-TTY ENVIRONMENTS)
+# ==============================================================================
+
+def fallback_numbered_selector(tools):
+    """Fallback tool selector when running in non-TTY or automated shells."""
+    print(f"\n {Color.BOLD}Available Tools Catalog:{Color.RESET}\n")
+    for idx, t in enumerate(tools, 1):
+        print(f"  [{idx:2d}] {t.name:<22} [{t.category:<20}] - {t.description}")
+    print()
+    print(f" {Color.INFO} Enter tool numbers (e.g. 1, 3, 5-10), 'all', or 'q' to cancel.")
+    choice = input(f" {Color.YELLOW}Your selection: {Color.RESET}").strip().lower()
+
+    if choice in ("q", "cancel", "exit"):
+        return []
+    if choice == "all":
+        return tools
+
+    selected = set()
+    parts = choice.split(",")
+    for part in parts:
+        part = part.strip()
+        if "-" in part:
+            try:
+                start, end = part.split("-", 1)
+                for i in range(int(start), int(end) + 1):
+                    if 1 <= i <= len(tools):
+                        selected.add(i - 1)
+            except ValueError:
+                pass
+        else:
+            try:
+                i = int(part)
+                if 1 <= i <= len(tools):
+                    selected.add(i - 1)
+            except ValueError:
+                pass
+
+    return [tools[i] for i in sorted(selected)]
+
+# ==============================================================================
+#  CATEGORY SELECTOR SCREEN
+# ==============================================================================
+
+def category_selector(target_dir_ref):
+    """Allow user to select and install tools by high-level category."""
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== CATEGORY TOOL SELECTOR ==={Color.RESET}\n")
+
+    cat_map = {}
+    for t in TOOL_CATALOG:
+        cat_map.setdefault(t.category, []).append(t)
+
+    print(f" {Color.BOLD}Available Categories:{Color.RESET}\n")
+    cat_list = list(cat_map.keys())
+    for idx, cat_name in enumerate(cat_list, 1):
+        tool_count = len(cat_map[cat_name])
+        sample_tools = ", ".join(t.name for t in cat_map[cat_name][:3]) + "..."
+        print(f"  {Color.CYAN}[{idx}]{Color.RESET} {Color.BOLD}{cat_name:<26}{Color.RESET} ({tool_count} tools) {Color.DIM}- e.g. {sample_tools}{Color.RESET}")
+
+    print(f"\n  {Color.YELLOW}[A]{Color.RESET} Select ALL Categories (All {len(TOOL_CATALOG)} tools)")
+    print(f"  {Color.RED}[0]{Color.RESET} Return to Main Menu\n")
+
+    choice = input(f" {Color.BOLD}Enter category number(s) separated by comma (e.g. 1, 2, 4): {Color.RESET}").strip()
+    if choice == "0" or not choice:
+        return []
+    if choice.upper() == "A":
+        return TOOL_CATALOG
+
+    selected_tools = []
+    for part in choice.split(","):
+        part = part.strip()
+        if part.isdigit():
+            idx = int(part) - 1
+            if 0 <= idx < len(cat_list):
+                selected_tools.extend(cat_map[cat_list[idx]])
+
+    return selected_tools
+
+# ==============================================================================
+#  BATCH INSTALLATION RUNNER WITH REAL-TIME FEEDBACK
+# ==============================================================================
+
+def run_installation_batch(selected_tools, target_dir, interactive=True):
+    """
+    Execute installation across selected tools.
+    Displays live step-by-step progress, timestamps, and summary cards.
+    """
+    if not selected_tools:
+        print(f"\n {Color.WARN} No tools selected for installation.")
+        time.sleep(1.5)
+        return
+
+    clear_screen()
+    display_banner()
+
+    os.makedirs(target_dir, exist_ok=True)
+    total = len(selected_tools)
+    total_start = time.time()
+
+    print(f" {Color.BOLD}{Color.GREEN}=== EXECUTING INSTALLATION BATCH ==={Color.RESET}")
+    print(f" Destination Directory : {Color.CYAN}{target_dir}{Color.RESET}")
+    print(f" Total Tools Selected  : {Color.BOLD}{total}{Color.RESET}\n")
+
+    successful = []
+    failed = []
+
+    for idx, tool in enumerate(selected_tools, 1):
+        print(f" {Color.DARK}┌─[{Color.RESET} {Color.BOLD}TOOL {idx}/{total}{Color.RESET}: {Color.CYAN}{Color.BOLD}{tool.name}{Color.RESET} {Color.PURPLE}[{tool.category}]{Color.RESET} {Color.DARK}]" + "─" * 25 + f"┐{Color.RESET}")
+        print(f" {Color.DARK}│{Color.RESET}  {Color.DIM}{tool.description}{Color.RESET}")
+        print(f" {Color.DARK}│{Color.RESET}  Source: {Color.BLUE}{tool.repo}{Color.RESET}")
+
+        ok, msg, elapsed = install_or_update_tool(tool, target_dir)
+
+        if ok:
+            print(f" {Color.DARK}└─▶{Color.RESET} {Color.SUCCESS} {Color.BOLD}{tool.name}{Color.RESET} finished: {Color.GREEN}{msg}{Color.RESET} {Color.DIM}({elapsed:.2f}s){Color.RESET}\n")
+            successful.append((tool.name, msg, elapsed))
+        else:
+            print(f" {Color.DARK}└─▶{Color.RESET} {Color.ERROR} {Color.BOLD}{tool.name}{Color.RESET} failed: {Color.RED}{msg}{Color.RESET} {Color.DIM}({elapsed:.2f}s){Color.RESET}\n")
+            failed.append((tool.name, msg, elapsed))
+
+    # Print Installation Summary Card
+    total_elapsed = time.time() - total_start
+    print(f" {Color.PURPLE}╔" + "═" * 68 + f"╗{Color.RESET}")
+    print(f" {Color.PURPLE}║  {Color.YELLOW}{Color.BOLD}★ INSTALLATION SUMMARY ★{Color.RESET}" + " " * 44 + f"{Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}╠" + "═" * 68 + f"╣{Color.RESET}")
+    print(f" {Color.PURPLE}║{Color.RESET}  {Color.BOLD}Total Processed{Color.RESET}    : {total:<46} {Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}║{Color.RESET}  {Color.SUCCESS} Successful     : {Color.GREEN}{len(successful):<46}{Color.RESET} {Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}║{Color.RESET}  {Color.ERROR} Failed/Warnings: {Color.RED}{len(failed):<46}{Color.RESET} {Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}║{Color.RESET}  {Color.BOLD}Time Elapsed{Color.RESET}       : {f'{total_elapsed:.1f} seconds':<46} {Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}║{Color.RESET}  {Color.BOLD}Destination Path{Color.RESET}   : {Color.CYAN}{target_dir[:46]:<46}{Color.RESET} {Color.PURPLE}║{Color.RESET}")
+    print(f" {Color.PURPLE}╚" + "═" * 68 + f"╝{Color.RESET}\n")
+
+    if failed:
+        print(f" {Color.WARN} Failed tools detail:")
+        for name, err, _ in failed:
+            print(f"   - {Color.BOLD}{name}{Color.RESET}: {Color.RED}{err}{Color.RESET}")
+        print()
+
+    # Time-based personalized greeting
+    hour = datetime.datetime.now().hour
+    greeting = "Good morning" if 4 <= hour < 12 else ("Good afternoon" if 12 <= hour < 17 else ("Good evening" if 17 <= hour < 21 else "Good night"))
+    print(f" {Color.GREEN}{Color.BOLD}{greeting}, {socket.gethostname()}! Happy Hacking!{Color.RESET}\n")
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+
+# ==============================================================================
+#  CATALOG VIEW & SOURCE AUDIT
+# ==============================================================================
+
+def display_tool_catalog(interactive=True):
+    """Display all curated tools and their authentic upstream source URLs."""
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== ETHICAL HACKING TOOLS CATALOG ({len(TOOL_CATALOG)} TOOLS) ==={Color.RESET}\n")
+
+    current_cat = None
+    for t in TOOL_CATALOG:
+        if t.category != current_cat:
+            current_cat = t.category
+            print(f"\n {Color.YELLOW}{Color.BOLD}── {current_cat.upper()} ──{Color.RESET}")
+        print(f"  {Color.GREEN}•{Color.RESET} {Color.BOLD}{t.name:<22}{Color.RESET} {Color.BLUE}{t.repo:<54}{Color.RESET}")
+        print(f"    {Color.DIM}{t.description}{Color.RESET}")
+
+    print()
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+
+# ==============================================================================
+#  MAIN INTERACTIVE MENU
+# ==============================================================================
+
+def main_menu(default_target_dir):
+    """Central interactive menu loop."""
+    target_dir_ref = [default_target_dir]
+
+    while True:
+        clear_screen()
+        display_banner()
+        display_status_header(target_dir_ref[0])
+
+        print(f" {Color.BOLD}PRIMARY ACTIONS:{Color.RESET}\n")
+        print(f"  {Color.CYAN}[1]{Color.RESET} {Color.BOLD}⚡ Quick Install All Tools{Color.RESET}        {Color.DIM}- Install complete 65+ tool suite{Color.RESET}")
+        print(f"  {Color.CYAN}[2]{Color.RESET} {Color.BOLD}🗂  Category Selector{Color.RESET}              {Color.DIM}- Choose tools by security domain{Color.RESET}")
+        print(f"  {Color.CYAN}[3]{Color.RESET} {Color.BOLD}☑  Interactive Checkbox Selector{Color.RESET}  {Color.DIM}- Custom select tools with spacebar [✓]{Color.RESET}")
+        print(f"  {Color.CYAN}[4]{Color.RESET} {Color.BOLD}🔄 Update All Installed Tools{Color.RESET}      {Color.DIM}- Run git pull updater on existing tools{Color.RESET}")
+        print(f"  {Color.CYAN}[5]{Color.RESET} {Color.BOLD}🛠  System Prerequisites & Apt{Color.RESET}     {Color.DIM}- Core Linux headers, Tor, Terminator, Wordlists{Color.RESET}")
+        print(f"  {Color.CYAN}[6]{Color.RESET} {Color.BOLD}📁 Change Destination Directory{Color.RESET}   {Color.DIM}- Current: {target_dir_ref[0]}{Color.RESET}")
+        print(f"  {Color.CYAN}[7]{Color.RESET} {Color.BOLD}📋 View Tool Catalog & Sources{Color.RESET}    {Color.DIM}- Inspect official upstream repositories{Color.RESET}")
+        print(f"  {Color.RED}[0]{Color.RESET} {Color.BOLD}🚪 Exit{Color.RESET}\n")
+
+        choice = input(f" {Color.BOLD}Select an option [0-7]: {Color.RESET}").strip()
+
+        if choice == "1":
+            confirm = input(f" {Color.YELLOW}Install ALL {len(TOOL_CATALOG)} tools to {target_dir_ref[0]}? [y/N]: {Color.RESET}").strip().lower()
+            if confirm == "y":
+                run_installation_batch(TOOL_CATALOG, target_dir_ref[0], interactive=True)
+        elif choice == "2":
+            selected = category_selector(target_dir_ref)
+            if selected:
+                run_installation_batch(selected, target_dir_ref[0], interactive=True)
+        elif choice == "3":
+            if sys.stdin.isatty():
+                selected = interactive_checkbox_selector(TOOL_CATALOG, target_dir_ref)
+            else:
+                selected = fallback_numbered_selector(TOOL_CATALOG)
+            if selected:
+                run_installation_batch(selected, target_dir_ref[0], interactive=True)
+        elif choice == "4":
+            update_all_installed_tools(target_dir_ref[0], interactive=True)
+        elif choice == "5":
+            install_system_prerequisites(interactive=True)
+        elif choice == "6":
+            print(f"\n {Color.BOLD}Current target directory:{Color.RESET} {Color.CYAN}{target_dir_ref[0]}{Color.RESET}")
+            new_path = input(f" {Color.YELLOW}Enter new destination directory path: {Color.RESET}").strip()
+            if new_path:
+                target_dir_ref[0] = os.path.abspath(os.path.expanduser(new_path))
+                print(f" {Color.SUCCESS} Destination directory set to: {target_dir_ref[0]}")
+                time.sleep(1)
+        elif choice == "7":
+            display_tool_catalog(interactive=True)
+        elif choice in ("0", "q", "exit"):
+            print(f"\n {Color.GREEN}Exiting. Stay ethical and keep learning!{Color.RESET}\n")
+            sys.exit(0)
+
+def check_git_installed():
+    """Verify that Git is installed and available in system PATH."""
+    if not shutil.which("git"):
+        info = PLATFORM_INFO
+        print(f"\n {Color.ERROR} Git is not installed or not found in system PATH!")
+        if info["os_type"] == "Windows":
+            print(f" {Color.INFO} Download Git for Windows from: https://git-scm.com/download/win")
+            print(f" {Color.INFO} Or run: winget install --id Git.Git -e --source winget")
+        elif info["os_type"] == "macOS":
+            print(f" {Color.INFO} Install Git via Homebrew: brew install git")
+            print(f" {Color.INFO} Or via Xcode Command Line Tools: xcode-select --install")
+        else:
+            print(f" {Color.INFO} Install Git via your Linux distribution's package manager:")
+            print(f"   Debian/Kali/Ubuntu : sudo apt install -y git")
+            print(f"   Arch/Manjaro       : sudo pacman -S git")
+            print(f"   Fedora/RHEL        : sudo dnf install -y git")
+            print(f"   Alpine Linux       : sudo apk add git")
+        print()
+        return False
+    return True
+
+# ==============================================================================
+#  CLI ARGUMENT PARSING & ENTRYPOINT
+# ==============================================================================
+
+def main():
+    default_dir = os.path.normpath(str(Path.home() / "Tools"))
+    parser = argparse.ArgumentParser(
+        description="SETUP_HACK_ENV: Advanced Ethical Hacking & Pentesting Environment Suite"
+    )
+    parser.add_argument("-a", "--all", action="store_true", help="Install all tools without interactive prompts")
+    parser.add_argument("-u", "--update", action="store_true", help="Update all installed tools in target directory")
+    parser.add_argument("-l", "--list", action="store_true", help="List all available tools and official links")
+    parser.add_argument("-d", "--dir", type=str, default=default_dir, help=f"Destination directory for cloning tools (default: {default_dir})")
+    parser.add_argument("-c", "--category", type=str, help="Install specific category (comma-separated)")
+    parser.add_argument("-t", "--tools", type=str, help="Install specific tool names (comma-separated, e.g. sherlock,sqlmap)")
+    parser.add_argument("--deps", action="store_true", help="Install core Linux/macOS/Windows dependencies and packages")
+    parser.add_argument("--no-interactive", action="store_true", help="Disable raw TTY interactive screens")
+
+    args = parser.parse_args()
+    target_dir = os.path.abspath(os.path.expanduser(args.dir))
+
+    # Fast path CLI flags
+    if args.list:
+        display_tool_catalog(interactive=False)
+        return
+
+    if args.deps:
+        install_system_prerequisites(interactive=False)
+        return
+
+    # Check git before performing clone or update operations
+    if (args.all or args.update or args.tools or args.category) and not check_git_installed():
+        sys.exit(1)
+
+    if args.update:
+        update_all_installed_tools(target_dir, interactive=False)
+        return
+
+    if args.tools:
+        req_tools = [t.strip().lower() for t in args.tools.split(",")]
+        matched_tools = [t for t in TOOL_CATALOG if t.name.lower() in req_tools or t.folder.lower() in req_tools]
+        if not matched_tools:
+            print(f" {Color.ERROR} No tools matched '{args.tools}'. Use --list to inspect available tools.")
+            sys.exit(1)
+        run_installation_batch(matched_tools, target_dir, interactive=False)
+        return
+
+    if args.all:
+        run_installation_batch(TOOL_CATALOG, target_dir, interactive=False)
+        return
+
+    if args.category:
+        req_cats = [c.strip().lower() for c in args.category.split(",")]
+        matched_tools = [t for t in TOOL_CATALOG if t.category.lower() in req_cats or any(rc in t.category.lower() for rc in req_cats)]
+        if not matched_tools:
+            print(f" {Color.ERROR} No categories matched '{args.category}'. Available categories:")
+            for c in CATEGORIES:
+                print(f"   - {c}")
+            sys.exit(1)
+        run_installation_batch(matched_tools, target_dir, interactive=False)
+        return
+
+    # Check git before opening interactive menu
+    check_git_installed()
+
+    # Default: Launch rich interactive menu
+    try:
+        main_menu(target_dir)
+    except KeyboardInterrupt:
+        print(f"\n\n {Color.WARN} Process aborted by user. Exiting gracefully.{Color.RESET}\n")
+        sys.exit(0)
+
+if __name__ == "__main__":
+    main()

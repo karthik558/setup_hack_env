@@ -18,7 +18,7 @@ def display_banner():
 display_banner()
 
 # Terminal header settings and information
-print(f"{RED}Developer   :   KARTHIK LAL (https://karthiklal.live){NC}")
+print(f"{RED}Developer   :   KARTHIK LAL (https://karthiklal.in){NC}")
 print(f"{RED}Created Date:   2021-12-07{NC}")
 print(f"{RED}Project     :   INJECTION-TEST{NC}")
 print(f"{RED}Purpose     :   INJECTION-TEST{NC}")
