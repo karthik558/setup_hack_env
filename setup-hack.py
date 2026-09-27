@@ -11,6 +11,9 @@
 import os
 import sys
 import time
+import json
+import re
+import venv
 import shutil
 import socket
 import datetime
@@ -160,6 +163,10 @@ class Color:
     UNDERLINE = "\033[4m" if ENABLED else ""
     INVERSE   = "\033[7m" if ENABLED else ""
     RESET     = "\033[0m" if ENABLED else ""
+
+    # Backgrounds
+    BG_BLUE   = "\033[48;5;27m" if ENABLED else ""
+    BG_DARK   = "\033[48;5;236m" if ENABLED else ""
 
     # Status Badges
     SUCCESS = f"{GREEN}{BOLD}[✔]{RESET}"
@@ -834,7 +841,108 @@ TOOL_CATALOG = [
 CATEGORIES = list(dict.fromkeys(t.category for t in TOOL_CATALOG))
 
 # ==============================================================================
-#  CLONING & INSTALLATION ENGINE
+#  ROLE-BASED INSTALLATION PROFILES & PRESETS (FEATURE 2)
+# ==============================================================================
+
+PROFILES = {
+    "bug-bounty": {
+        "name": "Bug Bounty & Web Hunter",
+        "description": "Essential web reconnaissance, endpoint discovery, parameter fuzzing, and injection tools",
+        "tools": [
+            "SQLMap", "XSStrike", "Nuclei", "Subfinder", "HTTPX", "Katana", "FFUF",
+            "Dalfox", "Commix", "Arjun", "Dirsearch", "WhatWeb", "CMSeeK", "ParamSpider",
+            "Wfuzz", "Nikto", "Sublist3r", "SecLists", "PayloadsAllTheThings"
+        ]
+    },
+    "osint": {
+        "name": "OSINT & Digital Intelligence",
+        "description": "Deep social media footprinting, email/phone verification, domain recon, and digital tracking",
+        "tools": [
+            "Sherlock", "theHarvester", "PhoneInfoga", "Holehe", "SpiderFoot", "Seeker",
+            "Nexfil", "FinalRecon", "Maigret", "Recon-ng", "Sublist3r", "GHunt",
+            "Social-Analyzer", "IP-Tracer", "Infoga"
+        ]
+    },
+    "red-team": {
+        "name": "Red Team & Exploitation",
+        "description": "Advanced C2 frameworks, adversary simulation, payload generation, pivoting, and privilege escalation",
+        "tools": [
+            "Metasploit-Framework", "Sliver", "Havoc-C2", "Villain", "Impacket",
+            "Responder", "NetExec", "PwnCat", "Routersploit", "PEASS-ng",
+            "LinEnum", "Linux-Exploit-Suggester", "Chisel", "Ligolo-ng", "PayloadsAllTheThings"
+        ]
+    },
+    "network": {
+        "name": "Network & Infrastructure",
+        "description": "High-speed port scanners, protocol auditing, MITM interception, and Active Directory / SMB auditing",
+        "tools": [
+            "RustScan", "Masscan", "Netdiscover", "Bettercap", "Responder", "Impacket",
+            "NetExec", "Sniffnet", "THC-Hydra"
+        ]
+    },
+    "wireless": {
+        "name": "Wireless & WiFi Auditing",
+        "description": "WPA/WPA2/WPA3 auditing, rogue AP creation, handshake capture, and deauth frameworks",
+        "tools": [
+            "Airgeddon", "Fluxion", "Wifite2", "EAPHammer", "FakeAPBuilder"
+        ]
+    },
+    "forensics": {
+        "name": "Forensics & Reverse Engineering",
+        "description": "Memory dump triage, Android APK decompiler, binary analysis, and exploit suggestion",
+        "tools": [
+            "Volatility3", "Apktool", "JADX", "Linux-Exploit-Suggester", "PEASS-ng"
+        ]
+    },
+    "essential": {
+        "name": "Essential Starter Kit",
+        "description": "Compact, fast curated suite with the most impactful tools across all domains",
+        "tools": [
+            "Sherlock", "theHarvester", "SQLMap", "Nuclei", "Subfinder", "HTTPX",
+            "FFUF", "Dirsearch", "RustScan", "Bettercap", "Responder", "Impacket",
+            "SecLists", "THC-Hydra", "PEASS-ng"
+        ]
+    }
+}
+
+def get_profile_tools(profile_id):
+    """Retrieve Tool instances corresponding to a preset profile."""
+    pid = profile_id.strip().lower()
+    if pid not in PROFILES:
+        return []
+    target_names = {name.lower() for name in PROFILES[pid]["tools"]}
+    return [t for t in TOOL_CATALOG if t.name.lower() in target_names]
+
+def profile_selector(target_dir_ref):
+    """Interactive role-based preset profile selector."""
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.YELLOW}=== ROLE-BASED INSTALLATION PROFILES & PRESETS ==={Color.RESET}\n")
+    print(f" Select a tailored security profile optimized for your specific role or workflow:\n")
+
+    p_keys = list(PROFILES.keys())
+    for idx, p_key in enumerate(p_keys, 1):
+        prof = PROFILES[p_key]
+        tool_count = len(prof["tools"])
+        print(f"  {Color.CYAN}[{idx}]{Color.RESET} {Color.BOLD}{prof['name']:<32}{Color.RESET} {Color.PURPLE}({tool_count} tools){Color.RESET}")
+        print(f"      {Color.DIM}{prof['description']}{Color.RESET}\n")
+
+    print(f"  {Color.RED}[0]{Color.RESET} Return to main menu\n")
+    choice = input(f" {Color.BOLD}Select a profile [1-{len(p_keys)}] or 0: {Color.RESET}").strip()
+
+    if choice.isdigit() and 1 <= int(choice) <= len(p_keys):
+        selected_key = p_keys[int(choice) - 1]
+        prof = PROFILES[selected_key]
+        matched_tools = get_profile_tools(selected_key)
+        print(f"\n {Color.GREEN}Selected Profile:{Color.RESET} {Color.BOLD}{prof['name']}{Color.RESET} ({len(matched_tools)} tools)")
+        print(f" Included: {Color.DIM}{', '.join([t.name for t in matched_tools])}{Color.RESET}\n")
+        confirm = input(f" {Color.YELLOW}Proceed with installation to {target_dir_ref[0]}? [Y/n]: {Color.RESET}").strip().lower()
+        if confirm in ("", "y", "yes"):
+            return matched_tools
+    return None
+
+# ==============================================================================
+#  CLONING & INSTALLATION ENGINE (WITH ISOLATED VIRTUAL ENVIRONMENTS)
 # ==============================================================================
 
 def check_pip_break_system_packages():
@@ -848,11 +956,77 @@ def check_pip_break_system_packages():
 
 PIP_HAS_BREAK_FLAG = check_pip_break_system_packages()
 
-def install_or_update_tool(tool, target_dir, log_fn=None):
+def generate_tool_launcher(tool, dest_path, venv_py):
+    """
+    Generate executable launcher wrappers (run.sh on POSIX, run.bat on Windows)
+    pointing directly to the isolated virtual environment interpreter.
+    """
+    try:
+        # Determine entry file if available
+        entry = ""
+        if tool.executables:
+            entry = tool.executables[0]
+        else:
+            candidates = [
+                f"{tool.folder}.py", "main.py", "run.py", "app.py", "cli.py",
+                f"{tool.folder.lower()}.py"
+            ]
+            for c in candidates:
+                if os.path.exists(os.path.join(dest_path, c)):
+                    entry = c
+                    break
+
+        # Generate run.sh for Linux/macOS
+        if os.name != "nt":
+            sh_path = os.path.join(dest_path, "run.sh")
+            sh_content = f"""#!/usr/bin/env bash
+# Auto-generated isolated launcher for {tool.name} (setup_hack_env)
+DIR="$(cd "$(dirname "${{BASH_SOURCE[0]}}")" && pwd)"
+if [ -f "$DIR/.venv/bin/python" ]; then
+    PY="$DIR/.venv/bin/python"
+elif [ -f "$DIR/.venv/bin/python3" ]; then
+    PY="$DIR/.venv/bin/python3"
+else
+    PY="python3"
+fi
+ENTRY="{entry}"
+if [ -n "$ENTRY" ] && [ -f "$DIR/$ENTRY" ]; then
+    exec "$PY" "$DIR/$ENTRY" "$@"
+else
+    exec "$PY" "$@"
+fi
+"""
+            with open(sh_path, "w", encoding="utf-8") as f:
+                f.write(sh_content)
+            os.chmod(sh_path, 0o755)
+
+        # Generate run.bat for Windows
+        bat_path = os.path.join(dest_path, "run.bat")
+        bat_content = f"""@echo off
+rem Auto-generated isolated launcher for {tool.name} (setup_hack_env)
+set SCRIPT_DIR=%~dp0
+set VENV_PY=%SCRIPT_DIR%.venv\\Scripts\\python.exe
+if not exist "%VENV_PY%" set VENV_PY=python
+set ENTRY={entry}
+if defined ENTRY (
+    if exist "%SCRIPT_DIR%%ENTRY%" (
+        "%VENV_PY%" "%SCRIPT_DIR%%ENTRY%" %*
+        exit /b %ERRORLEVEL%
+    )
+)
+"%VENV_PY%" %*
+"""
+        with open(bat_path, "w", encoding="utf-8") as f:
+            f.write(bat_content)
+    except Exception:
+        pass
+
+def install_or_update_tool(tool, target_dir, log_fn=None, use_venv=True):
     """
     Robust clone and update handler.
     Supports Windows, macOS, and all Linux distributions.
     Executes commands with exact working directory (cwd).
+    Features isolated virtual environments (.venv) per Python tool.
     """
     dest_path = os.path.normpath(os.path.join(target_dir, tool.folder))
     start_time = time.time()
@@ -913,25 +1087,67 @@ def install_or_update_tool(tool, target_dir, log_fn=None):
                 return False, f"Clone error: {err}", time.time() - start_time
             status_msg = "Cloned"
 
-        # Step 2: Handle Dependencies
+        # Step 2: Handle Dependencies & Isolated Virtual Environment
         if tool.install_type in ("pip", "pip_setup") and os.path.exists(dest_path):
+            venv_pip = None
+            venv_py = None
+            if use_venv:
+                venv_dir = os.path.join(dest_path, ".venv")
+                if not os.path.exists(venv_dir):
+                    log(f"  {Color.STEP} Creating isolated Python virtual environment (.venv)...")
+                    try:
+                        venv_res = subprocess.run(
+                            [sys.executable, "-m", "venv", venv_dir],
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+                        )
+                        if venv_res.returncode != 0:
+                            venv.create(venv_dir, with_pip=True)
+                    except Exception as ve:
+                        log(f"  {Color.WARN} Venv notice: {ve}")
+
+                # Detect venv pip & python binaries
+                if os.name == "nt":
+                    candidate_pip = os.path.join(venv_dir, "Scripts", "pip.exe")
+                    candidate_py = os.path.join(venv_dir, "Scripts", "python.exe")
+                else:
+                    candidate_pip = os.path.join(venv_dir, "bin", "pip")
+                    candidate_py = os.path.join(venv_dir, "bin", "python")
+
+                if os.path.exists(candidate_pip):
+                    venv_pip = candidate_pip
+                    venv_py = candidate_py
+                else:
+                    # Alternative Scripts directory
+                    candidate_pip_alt = os.path.join(venv_dir, "Scripts", "pip")
+                    if os.path.exists(candidate_pip_alt):
+                        venv_pip = candidate_pip_alt
+                        venv_py = os.path.join(venv_dir, "Scripts", "python")
+
+            if venv_pip:
+                base_pip_cmd = [venv_pip, "install"]
+                log(f"  {Color.SUCCESS} Isolated environment active (.venv)")
+            else:
+                base_pip_cmd = [sys.executable, "-m", "pip", "install"]
+                if PIP_HAS_BREAK_FLAG:
+                    base_pip_cmd.append("--break-system-packages")
+
             req_file = os.path.join(dest_path, "requirements.txt")
             if os.path.exists(req_file):
                 log(f"  {Color.STEP} Installing Python dependencies from requirements.txt...")
-                pip_cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
-                if PIP_HAS_BREAK_FLAG:
-                    pip_cmd.append("--break-system-packages")
-                subprocess.run(pip_cmd, cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                subprocess.run(base_pip_cmd + ["-r", "requirements.txt", "--quiet"],
+                               cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
             if tool.install_type == "pip_setup":
                 setup_file = os.path.join(dest_path, "setup.py")
                 pyproj_file = os.path.join(dest_path, "pyproject.toml")
                 if os.path.exists(setup_file) or os.path.exists(pyproj_file):
                     log(f"  {Color.STEP} Installing package via pip install . ...")
-                    setup_cmd = [sys.executable, "-m", "pip", "install", ".", "--quiet"]
-                    if PIP_HAS_BREAK_FLAG:
-                        setup_cmd.append("--break-system-packages")
-                    subprocess.run(setup_cmd, cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                    subprocess.run(base_pip_cmd + [".", "--quiet"],
+                                   cwd=dest_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            # Generate launcher wrapper script
+            if venv_py and os.path.exists(dest_path):
+                generate_tool_launcher(tool, dest_path, venv_py)
 
         elif tool.install_type == "make" and os.path.exists(dest_path):
             if os.path.exists(os.path.join(dest_path, "Makefile")):
@@ -1033,9 +1249,13 @@ def update_all_installed_tools(target_dir, interactive=True):
                 # Check requirements update
                 req_file = os.path.join(repo_path, "requirements.txt")
                 if os.path.exists(req_file):
-                    pip_cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
-                    if PIP_HAS_BREAK_FLAG:
-                        pip_cmd.append("--break-system-packages")
+                    venv_pip = os.path.join(repo_path, ".venv", "Scripts" if os.name == "nt" else "bin", "pip.exe" if os.name == "nt" else "pip")
+                    if os.path.exists(venv_pip):
+                        pip_cmd = [venv_pip, "install", "-r", "requirements.txt", "--quiet"]
+                    else:
+                        pip_cmd = [sys.executable, "-m", "pip", "install", "-r", "requirements.txt", "--quiet"]
+                        if PIP_HAS_BREAK_FLAG:
+                            pip_cmd.append("--break-system-packages")
                     subprocess.run(pip_cmd, cwd=repo_path, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         else:
             err_line = pull_res.stderr.strip().splitlines()[-1] if pull_res.stderr.strip() else "Pull conflict/error"
@@ -1193,7 +1413,7 @@ def install_system_prerequisites(interactive=True):
 def read_key():
     """
     Read a single keystroke from standard input across Windows, macOS, and Linux.
-    Supports arrow keys, space, enter, page up, page down, and shortcuts.
+    Supports arrow keys, space, enter, backspace, tab, page up, page down, and shortcuts.
     """
     if os.name == "nt":
         import msvcrt
@@ -1215,6 +1435,10 @@ def read_key():
             return "ENTER"
         elif ch == " ":
             return "SPACE"
+        elif ch in ("\x08", "\x7f"):
+            return "BACKSPACE"
+        elif ch == "\t":
+            return "TAB"
         elif ch == "\x03":  # Ctrl+C
             return "CTRL_C"
         elif ch == "\x1b":  # Escape
@@ -1246,6 +1470,10 @@ def read_key():
                                 return "RIGHT"
                             elif ch3 == "D":
                                 return "LEFT"
+                            elif ch3 == "H":
+                                return "HOME"
+                            elif ch3 == "F":
+                                return "END"
                             elif ch3 in ("5", "6"):
                                 sys.stdin.read(1)  # Consume '~'
                                 return "PAGE_UP" if ch3 == "5" else "PAGE_DOWN"
@@ -1257,12 +1485,20 @@ def read_key():
                             return "UP"
                         if ch3 == "B":
                             return "DOWN"
+                        if ch3 == "H":
+                            return "HOME"
+                        if ch3 == "F":
+                            return "END"
                         return "ESC"
                 return "ESC"
             elif ch in ("\r", "\n"):
                 return "ENTER"
             elif ch == " ":
                 return "SPACE"
+            elif ch in ("\x7f", "\x08"):
+                return "BACKSPACE"
+            elif ch == "\t":
+                return "TAB"
             elif ch == "\x03":  # Ctrl+C
                 return "CTRL_C"
             return ch
@@ -1270,17 +1506,18 @@ def read_key():
             termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
 # ==============================================================================
-#  INTERACTIVE CHECKBOX TOOL SELECTOR
+#  INTERACTIVE CHECKBOX TOOL SELECTOR (WITH LIVE SEARCH FILTER)
 # ==============================================================================
 
 def interactive_checkbox_selector(tools, target_dir_ref):
     """
-    Full-featured interactive terminal checkbox multi-selector.
+    Full-featured interactive terminal checkbox multi-selector with live search filtering.
     Features:
+      - Live search filter: Press [/] or type query to dynamically filter tools
       - Spacebar toggle for checkboxes: [✓] / [ ]
       - Up / Down (or k / j) to navigate smoothly
-      - 'a' key: Select All / Deselect All
-      - 'c' key: Toggle entire category
+      - 'a' key: Select All / Deselect All visible matches
+      - 'c' key: Toggle entire category of focused item
       - 'd' key: Edit destination directory
       - Enter: Confirm selection and proceed with installation
       - 'q' or Esc: Cancel and return
@@ -1290,6 +1527,8 @@ def interactive_checkbox_selector(tools, target_dir_ref):
     cursor = 0
     total_tools = len(tools)
     target_dir = target_dir_ref[0]
+    search_query = ""
+    search_mode = False
 
     # Hide terminal cursor for flicker-free rendering
     if Color.ENABLED:
@@ -1298,58 +1537,89 @@ def interactive_checkbox_selector(tools, target_dir_ref):
 
     try:
         while True:
+            # Filter tools according to search query
+            if search_query:
+                q = search_query.lower()
+                filtered_tools = [
+                    t for t in tools
+                    if q in t.name.lower() or q in t.category.lower() or q in t.description.lower()
+                ]
+            else:
+                filtered_tools = tools
+
+            num_filtered = len(filtered_tools)
+            if num_filtered == 0:
+                cursor = 0
+            else:
+                cursor = max(0, min(cursor, num_filtered - 1))
+
             term_w = get_terminal_width()
             term_h = get_terminal_height()
 
-            # Reserve lines for header, status, footer
-            header_lines = 10
+            # Reserve lines for header, search bar, controls, footer
+            header_lines = 11
             footer_lines = 4
             page_size = max(5, term_h - header_lines - footer_lines)
 
             # Viewport scrolling window
-            scroll_offset = max(0, min(cursor - page_size // 2, total_tools - page_size))
-            visible_tools = tools[scroll_offset : scroll_offset + page_size]
+            scroll_offset = max(0, min(cursor - page_size // 2, max(0, num_filtered - page_size)))
+            visible_tools = filtered_tools[scroll_offset : scroll_offset + page_size]
 
             selected_count = sum(1 for v in selected.values() if v)
+            visible_selected = sum(1 for t in filtered_tools if selected.get(t.name, False))
 
             # Build frame in buffer
             buf = []
             buf.append("\033[H\033[J")  # Clear screen and move cursor home
             buf.append(f"{Color.CYAN}{Color.BOLD}╔" + "═" * (term_w - 4) + f"╗{Color.RESET}\n")
-            buf.append(f"{Color.CYAN}{Color.BOLD}║  ☑  INTERACTIVE TOOL CHECKBOX SELECTOR" + " " * max(0, term_w - 44) + f"║{Color.RESET}\n")
+            buf.append(f"{Color.CYAN}{Color.BOLD}║  ☑  INTERACTIVE TOOL CHECKBOX SELECTOR (WITH LIVE SEARCH)" + " " * max(0, term_w - 61) + f"║{Color.RESET}\n")
             buf.append(f"{Color.CYAN}{Color.BOLD}╚" + "═" * (term_w - 4) + f"╝{Color.RESET}\n")
 
+            # Search bar & Status line
+            if search_mode:
+                search_display = f"{Color.BG_BLUE}{Color.WHITE}{Color.BOLD} SEARCH MODE {Color.RESET} {Color.YELLOW}[{search_query}█]{Color.RESET}  {Color.DIM}(Type query, [Enter/Esc] to exit search mode){Color.RESET}"
+            else:
+                if search_query:
+                    search_display = f"{Color.PURPLE}{Color.BOLD}Active Filter:{Color.RESET} '{Color.YELLOW}{search_query}{Color.RESET}' ({num_filtered}/{total_tools} matched)  {Color.DIM}(Press [/] to edit filter, [x] to clear){Color.RESET}"
+                else:
+                    search_display = f"{Color.DIM}Search Filter: [Press '/' to search and filter tools dynamically]{Color.RESET}"
+
+            buf.append(f" {search_display}\n")
             buf.append(
-                f" {Color.BOLD}Selected:{Color.RESET} {Color.GREEN}{selected_count}/{total_tools}{Color.RESET} tools  "
+                f" {Color.BOLD}Selected:{Color.RESET} {Color.GREEN}{selected_count}/{total_tools}{Color.RESET} total "
+                f"({Color.CYAN}{visible_selected}/{num_filtered}{Color.RESET} visible)  "
                 f"{Color.DIM}│{Color.RESET}  {Color.BOLD}Target Dir:{Color.RESET} {Color.CYAN}{target_dir}{Color.RESET}\n"
             )
             buf.append(
-                f" {Color.DIM}Controls: [↑/↓] Navigate │ [Space] Check │ [a] All │ [c] Category │ [d] Dir │ [Enter] Install │ [q] Cancel{Color.RESET}\n"
+                f" {Color.DIM}Controls: [/] Search │ [↑/↓] Navigate │ [Space] Check │ [a] All In Filter │ [c] Cat │ [Enter] Install │ [q] Back{Color.RESET}\n"
             )
             buf.append(f" {Color.DARK}" + "─" * (term_w - 2) + f"{Color.RESET}\n")
 
             # Render visible tools
-            for i, tool in enumerate(visible_tools):
-                global_idx = scroll_offset + i
-                is_cursor = (global_idx == cursor)
-                is_checked = selected.get(tool.name, False)
+            if not visible_tools:
+                buf.append(f"\n   {Color.WARN} No tools matched filter '{search_query}'. Press [/] to change or [x] to clear.\n\n")
+            else:
+                for i, tool in enumerate(visible_tools):
+                    global_idx = scroll_offset + i
+                    is_cursor = (global_idx == cursor)
+                    is_checked = selected.get(tool.name, False)
 
-                checkbox = f"{Color.GREEN}{Color.BOLD}[✓]{Color.RESET}" if is_checked else f"{Color.GRAY}[ ]{Color.RESET}"
-                pointer = f"{Color.CYAN}{Color.BOLD}➜{Color.RESET} " if is_cursor else "  "
+                    checkbox = f"{Color.GREEN}{Color.BOLD}[✓]{Color.RESET}" if is_checked else f"{Color.GRAY}[ ]{Color.RESET}"
+                    pointer = f"{Color.CYAN}{Color.BOLD}➜{Color.RESET} " if is_cursor else "  "
 
-                name_styled = f"{Color.BOLD}{Color.WHITE}{tool.name:<20}{Color.RESET}" if is_cursor else f"{tool.name:<20}"
-                cat_badge = f"{Color.PURPLE}[{tool.category[:15]}]{Color.RESET}"
-                desc = tool.description[:max(10, term_w - 55)]
+                    name_styled = f"{Color.BOLD}{Color.WHITE}{tool.name:<20}{Color.RESET}" if is_cursor else f"{tool.name:<20}"
+                    cat_badge = f"{Color.PURPLE}[{tool.category[:15]}]{Color.RESET}"
+                    desc = tool.description[:max(10, term_w - 55)]
 
-                line = f"{pointer}{checkbox} {name_styled} {cat_badge:<25} {Color.DIM}{desc}{Color.RESET}"
-                buf.append(line + "\n")
+                    line = f"{pointer}{checkbox} {name_styled} {cat_badge:<25} {Color.DIM}{desc}{Color.RESET}"
+                    buf.append(line + "\n")
 
             # Fill blank lines if terminal is large
             for _ in range(page_size - len(visible_tools)):
                 buf.append("\n")
 
             buf.append(f" {Color.DARK}" + "─" * (term_w - 2) + f"{Color.RESET}\n")
-            pos_info = f"Item {cursor + 1}/{total_tools} (Viewing {scroll_offset + 1}-{min(scroll_offset + page_size, total_tools)})"
+            pos_info = f"Item {cursor + 1}/{num_filtered} (Showing {scroll_offset + 1}-{min(scroll_offset + page_size, num_filtered)} of {num_filtered})" if num_filtered > 0 else "0 tools matched"
             buf.append(f" {Color.DIM}{pos_info:<40}{Color.RESET}\n")
 
             sys.stdout.write("".join(buf))
@@ -1358,29 +1628,52 @@ def interactive_checkbox_selector(tools, target_dir_ref):
             # Read user keystroke
             key = read_key()
 
-            if key in ("UP", "k", "K"):
+            if search_mode:
+                if key in ("ESC", "ENTER"):
+                    search_mode = False
+                elif key == "BACKSPACE":
+                    search_query = search_query[:-1]
+                elif key == "TAB":
+                    search_mode = False
+                elif len(key) == 1 and key.isprintable():
+                    search_query += key
+                continue
+
+            # Standard Navigation Mode
+            if key == "/":
+                search_mode = True
+            elif key in ("x", "X") and search_query:
+                search_query = ""
+            elif key in ("UP", "k", "K"):
                 cursor = max(0, cursor - 1)
             elif key in ("DOWN", "j", "J"):
-                cursor = min(total_tools - 1, cursor + 1)
+                cursor = min(max(0, num_filtered - 1), cursor + 1)
             elif key == "PAGE_UP":
                 cursor = max(0, cursor - page_size)
             elif key == "PAGE_DOWN":
-                cursor = min(total_tools - 1, cursor + page_size)
+                cursor = min(max(0, num_filtered - 1), cursor + page_size)
+            elif key == "HOME":
+                cursor = 0
+            elif key == "END":
+                cursor = max(0, num_filtered - 1)
             elif key == "SPACE":
-                tool_name = tools[cursor].name
-                selected[tool_name] = not selected.get(tool_name, False)
+                if num_filtered > 0:
+                    tool_name = filtered_tools[cursor].name
+                    selected[tool_name] = not selected.get(tool_name, False)
             elif key in ("a", "A"):
-                # Toggle all
-                all_selected = (selected_count == total_tools)
-                for t in tools:
-                    selected[t.name] = not all_selected
+                # Toggle all visible filtered tools
+                if num_filtered > 0:
+                    all_vis_selected = all(selected.get(t.name, False) for t in filtered_tools)
+                    for t in filtered_tools:
+                        selected[t.name] = not all_vis_selected
             elif key in ("c", "C"):
                 # Toggle entire category of the active item
-                current_cat = tools[cursor].category
-                cat_tools = [t for t in tools if t.category == current_cat]
-                cat_all_on = all(selected.get(t.name, False) for t in cat_tools)
-                for t in cat_tools:
-                    selected[t.name] = not cat_all_on
+                if num_filtered > 0:
+                    current_cat = filtered_tools[cursor].category
+                    cat_tools = [t for t in filtered_tools if t.category == current_cat]
+                    cat_all_on = all(selected.get(t.name, False) for t in cat_tools)
+                    for t in cat_tools:
+                        selected[t.name] = not cat_all_on
             elif key in ("d", "D"):
                 # Change destination directory
                 sys.stdout.write("\033[?25h")
@@ -1488,7 +1781,7 @@ def category_selector(target_dir_ref):
 #  BATCH INSTALLATION RUNNER WITH REAL-TIME FEEDBACK
 # ==============================================================================
 
-def run_installation_batch(selected_tools, target_dir, interactive=True):
+def run_installation_batch(selected_tools, target_dir, interactive=True, use_venv=True):
     """
     Execute installation across selected tools.
     Displays live step-by-step progress, timestamps, and summary cards.
@@ -1507,7 +1800,8 @@ def run_installation_batch(selected_tools, target_dir, interactive=True):
 
     print(f" {Color.BOLD}{Color.GREEN}=== EXECUTING INSTALLATION BATCH ==={Color.RESET}")
     print(f" Destination Directory : {Color.CYAN}{target_dir}{Color.RESET}")
-    print(f" Total Tools Selected  : {Color.BOLD}{total}{Color.RESET}\n")
+    print(f" Total Tools Selected  : {Color.BOLD}{total}{Color.RESET}")
+    print(f" Environment Mode      : {'Isolated Python .venv per tool' if use_venv else 'System Global Interpreter'}\n")
 
     successful = []
     failed = []
@@ -1517,7 +1811,7 @@ def run_installation_batch(selected_tools, target_dir, interactive=True):
         print(f" {Color.DARK}│{Color.RESET}  {Color.DIM}{tool.description}{Color.RESET}")
         print(f" {Color.DARK}│{Color.RESET}  Source: {Color.BLUE}{tool.repo}{Color.RESET}")
 
-        ok, msg, elapsed = install_or_update_tool(tool, target_dir)
+        ok, msg, elapsed = install_or_update_tool(tool, target_dir, use_venv=use_venv)
 
         if ok:
             print(f" {Color.DARK}└─▶{Color.RESET} {Color.SUCCESS} {Color.BOLD}{tool.name}{Color.RESET} finished: {Color.GREEN}{msg}{Color.RESET} {Color.DIM}({elapsed:.2f}s){Color.RESET}\n")
@@ -1574,61 +1868,773 @@ def display_tool_catalog(interactive=True):
         input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
 
 # ==============================================================================
-#  MAIN INTERACTIVE MENU
+#  SYSTEM DOCTOR & PRE-FLIGHT DIAGNOSTICS (FEATURE 5)
 # ==============================================================================
 
-def main_menu(default_target_dir):
-    """Central interactive menu loop."""
-    target_dir_ref = [default_target_dir]
+def check_socket_latency(host, port=443, timeout=3.0):
+    """Measure raw TCP socket connection latency in milliseconds."""
+    start = time.time()
+    try:
+        s = socket.create_connection((host, port), timeout=timeout)
+        s.close()
+        return round((time.time() - start) * 1000, 1)
+    except Exception:
+        return None
 
-    while True:
-        clear_screen()
-        display_banner()
-        display_status_header(target_dir_ref[0])
+def check_command_output(cmd, timeout=4):
+    """Run command safely and extract first line of output."""
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, timeout=timeout)
+        if res.returncode == 0 and res.stdout.strip():
+            return res.stdout.strip().splitlines()[0]
+        elif res.stderr.strip():
+            return res.stderr.strip().splitlines()[0]
+        return None
+    except Exception:
+        return None
 
-        print(f" {Color.BOLD}PRIMARY ACTIONS:{Color.RESET}\n")
-        print(f"  {Color.CYAN}[1]{Color.RESET} {Color.BOLD}⚡ Quick Install All Tools{Color.RESET}        {Color.DIM}- Install complete 65+ tool suite{Color.RESET}")
-        print(f"  {Color.CYAN}[2]{Color.RESET} {Color.BOLD}🗂  Category Selector{Color.RESET}              {Color.DIM}- Choose tools by security domain{Color.RESET}")
-        print(f"  {Color.CYAN}[3]{Color.RESET} {Color.BOLD}☑  Interactive Checkbox Selector{Color.RESET}  {Color.DIM}- Custom select tools with spacebar [✓]{Color.RESET}")
-        print(f"  {Color.CYAN}[4]{Color.RESET} {Color.BOLD}🔄 Update All Installed Tools{Color.RESET}      {Color.DIM}- Run git pull updater on existing tools{Color.RESET}")
-        print(f"  {Color.CYAN}[5]{Color.RESET} {Color.BOLD}🛠  System Prerequisites & Apt{Color.RESET}     {Color.DIM}- Core Linux headers, Tor, Terminator, Wordlists{Color.RESET}")
-        print(f"  {Color.CYAN}[6]{Color.RESET} {Color.BOLD}📁 Change Destination Directory{Color.RESET}   {Color.DIM}- Current: {target_dir_ref[0]}{Color.RESET}")
-        print(f"  {Color.CYAN}[7]{Color.RESET} {Color.BOLD}📋 View Tool Catalog & Sources{Color.RESET}    {Color.DIM}- Inspect official upstream repositories{Color.RESET}")
-        print(f"  {Color.RED}[0]{Color.RESET} {Color.BOLD}🚪 Exit{Color.RESET}\n")
+def run_doctor_diagnostics(interactive=True):
+    """
+    Comprehensive environment doctor:
+      - Validates operating system, kernel, and virtualization (Docker/WSL/Baremetal)
+      - Inspects compilers and runtimes: Python, Git, Go, Rust/Cargo, Node, NPM, Ruby, Gem, Make, GCC/Clang, Docker
+      - Inspects security packages: Nmap, Tor, Proxychains, TCPDump
+      - Verifies disk storage capacity and target volume health
+      - Tests live network latency to GitHub, PyPI, and DNS
+      - Computes an overall environment health score with copy-paste remediation commands.
+    """
+    clear_screen()
+    display_banner()
+    info = PLATFORM_INFO
 
-        choice = input(f" {Color.BOLD}Select an option [0-7]: {Color.RESET}").strip()
+    print(f" {Color.BOLD}{Color.YELLOW}=== PRE-FLIGHT ENVIRONMENT DOCTOR & SYSTEM DIAGNOSTICS ==={Color.RESET}\n")
 
-        if choice == "1":
-            confirm = input(f" {Color.YELLOW}Install ALL {len(TOOL_CATALOG)} tools to {target_dir_ref[0]}? [y/N]: {Color.RESET}").strip().lower()
-            if confirm == "y":
-                run_installation_batch(TOOL_CATALOG, target_dir_ref[0], interactive=True)
-        elif choice == "2":
-            selected = category_selector(target_dir_ref)
-            if selected:
-                run_installation_batch(selected, target_dir_ref[0], interactive=True)
-        elif choice == "3":
-            if sys.stdin.isatty():
-                selected = interactive_checkbox_selector(TOOL_CATALOG, target_dir_ref)
+    # 1. System & Virtualization
+    virt_type = "Bare Metal / Standard Host"
+    if os.path.exists("/.dockerenv") or os.path.exists("/run/systemd/container"):
+        virt_type = "Docker Container"
+    elif "microsoft" in platform.uname().release.lower():
+        virt_type = "WSL (Windows Subsystem for Linux)"
+
+    print(f" {Color.BOLD}1. OPERATING SYSTEM & ARCHITECTURE{Color.RESET}")
+    print(f"   • OS Platform      : {Color.CYAN}{info['os_name']} ({info['os_type']}){Color.RESET}")
+    print(f"   • Kernel & Arch    : {platform.system()} {platform.release()} ({platform.machine()})")
+    print(f"   • Environment Type : {Color.PURPLE}{virt_type}{Color.RESET}")
+    print(f"   • Privilege Level  : {'Elevated (Admin/Root)' if info['is_admin'] else 'Standard User'}")
+    print(f"   • Python Runtime   : {sys.version.split()[0]} ({sys.executable})\n")
+
+    # 2. Runtimes & Compilers
+    print(f" {Color.BOLD}2. RUNTIMES, COMPILERS & BUILD TOOLS AUDIT{Color.RESET}")
+    print(f"   {Color.DARK}┌" + "─" * 18 + "┬" + "─" * 10 + "┬" + "─" * 28 + "┬" + "─" * 22 + f"┐{Color.RESET}")
+    print(f"   {Color.DARK}│{Color.RESET} {Color.BOLD}{'Runtime/Tool':<16}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Status':<8}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Version / Path':<26}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Required For':<20}{Color.RESET} {Color.DARK}│{Color.RESET}")
+    print(f"   {Color.DARK}├" + "─" * 18 + "┼" + "─" * 10 + "┼" + "─" * 28 + "┼" + "─" * 22 + f"┤{Color.RESET}")
+
+    runtimes = [
+        ("Git", ["git", "--version"], True, "Cloning & auto-pulls"),
+        ("Python 3", [sys.executable, "--version"], True, "Python security tools"),
+        ("Pip", [sys.executable, "-m", "pip", "--version"], True, "Python package manager"),
+        ("Go (Golang)", ["go", "version"], False, "HTTPX, Nuclei, Katana"),
+        ("Cargo (Rust)", ["cargo", "--version"], False, "RustScan, Sniffnet"),
+        ("Node.js", ["node", "--version"], False, "JS recon & API security"),
+        ("NPM", ["npm", "--version"], False, "Node package manager"),
+        ("Ruby", ["ruby", "--version"], False, "CeWL, WPScan"),
+        ("Gem", ["gem", "--version"], False, "Ruby package manager"),
+        ("Make", ["make", "--version"], False, "C/C++ compilation"),
+        ("GCC / Clang", ["gcc", "--version"] if shutil.which("gcc") else ["clang", "--version"], False, "Native code build"),
+        ("Docker", ["docker", "--version"], False, "Sandbox container"),
+    ]
+
+    missing_critical = []
+    missing_optional = []
+    total_score = 100
+
+    for name, cmd, is_crit, purpose in runtimes:
+        bin_name = cmd[0] if cmd else name
+        found = shutil.which(bin_name) or (name == "Python 3") or (name == "Pip")
+        if found:
+            out = check_command_output(cmd)
+            v_str = out[:26] if out else "Installed"
+            v_str = v_str.replace("version ", "v").replace("go version ", "")
+            status = f"{Color.GREEN}PASS{Color.RESET}"
+            print(f"   {Color.DARK}│{Color.RESET} {name:<16} {Color.DARK}│{Color.RESET} {status:<17} {Color.DARK}│{Color.RESET} {v_str:<26} {Color.DARK}│{Color.RESET} {Color.DIM}{purpose[:20]:<20}{Color.RESET} {Color.DARK}│{Color.RESET}")
+        else:
+            status = f"{Color.RED}FAIL{Color.RESET}" if is_crit else f"{Color.YELLOW}WARN{Color.RESET}"
+            print(f"   {Color.DARK}│{Color.RESET} {name:<16} {Color.DARK}│{Color.RESET} {status:<17} {Color.DARK}│{Color.RESET} {'Not Found':<26} {Color.DARK}│{Color.RESET} {Color.DIM}{purpose[:20]:<20}{Color.RESET} {Color.DARK}│{Color.RESET}")
+            if is_crit:
+                missing_critical.append(name)
+                total_score -= 20
             else:
-                selected = fallback_numbered_selector(TOOL_CATALOG)
-            if selected:
-                run_installation_batch(selected, target_dir_ref[0], interactive=True)
-        elif choice == "4":
-            update_all_installed_tools(target_dir_ref[0], interactive=True)
-        elif choice == "5":
-            install_system_prerequisites(interactive=True)
-        elif choice == "6":
-            print(f"\n {Color.BOLD}Current target directory:{Color.RESET} {Color.CYAN}{target_dir_ref[0]}{Color.RESET}")
-            new_path = input(f" {Color.YELLOW}Enter new destination directory path: {Color.RESET}").strip()
-            if new_path:
-                target_dir_ref[0] = os.path.abspath(os.path.expanduser(new_path))
-                print(f" {Color.SUCCESS} Destination directory set to: {target_dir_ref[0]}")
-                time.sleep(1)
-        elif choice == "7":
-            display_tool_catalog(interactive=True)
-        elif choice in ("0", "q", "exit"):
-            print(f"\n {Color.GREEN}Exiting. Stay ethical and keep learning!{Color.RESET}\n")
-            sys.exit(0)
+                missing_optional.append(name)
+                total_score -= 5
+
+    print(f"   {Color.DARK}└" + "─" * 18 + "┴" + "─" * 10 + "┴" + "─" * 28 + "┴" + "─" * 22 + f"┘{Color.RESET}\n")
+
+    # 3. Pre-Installed Security Binaries
+    print(f" {Color.BOLD}3. PRE-INSTALLED SYSTEM UTILITIES{Color.RESET}")
+    sec_utils = ["nmap", "tor", "proxychains4" if shutil.which("proxychains4") else "proxychains", "tcpdump", "wireshark"]
+    for util in sec_utils:
+        path = shutil.which(util)
+        if path:
+            print(f"   • {util:<14}: {Color.GREEN}Available{Color.RESET} ({Color.DIM}{path}{Color.RESET})")
+        else:
+            print(f"   • {util:<14}: {Color.DIM}Not installed in PATH{Color.RESET}")
+    print()
+
+    # 4. Storage & Volume Health
+    print(f" {Color.BOLD}4. STORAGE & VOLUME HEALTH{Color.RESET}")
+    try:
+        cwd_usage = shutil.disk_usage(os.getcwd())
+        free_gb = cwd_usage.free / (1024**3)
+        total_gb = cwd_usage.total / (1024**3)
+        pct_used = (cwd_usage.used / cwd_usage.total) * 100
+        disk_status = f"{Color.GREEN}Optimal{Color.RESET}" if free_gb >= 15 else (f"{Color.YELLOW}Adequate{Color.RESET}" if free_gb >= 5 else f"{Color.RED}Critical Low{Color.RESET}")
+        print(f"   • Working Volume   : {disk_status} - {free_gb:.1f} GB free of {total_gb:.1f} GB ({pct_used:.1f}% used)")
+        if free_gb < 5:
+            total_score -= 15
+            print(f"     {Color.WARN} Less than 5 GB remaining. Cloning large repos may exhaust space.")
+    except Exception as e:
+        print(f"   • Storage check notice: {e}")
+    print()
+
+    # 5. Network Connectivity & Latency
+    print(f" {Color.BOLD}5. NETWORK CONNECTIVITY & LATENCY{Color.RESET}")
+    github_lat = check_socket_latency("github.com", 443)
+    pypi_lat = check_socket_latency("pypi.org", 443)
+    dns_start = time.time()
+    try:
+        socket.gethostbyname("github.com")
+        dns_lat = round((time.time() - dns_start) * 1000, 1)
+        dns_str = f"{Color.GREEN}{dns_lat} ms{Color.RESET}"
+    except Exception:
+        dns_str = f"{Color.RED}Failed{Color.RESET}"
+        total_score -= 15
+
+    gh_str = f"{Color.GREEN}{github_lat} ms{Color.RESET}" if github_lat is not None else f"{Color.RED}Unreachable{Color.RESET}"
+    pypi_str = f"{Color.GREEN}{pypi_lat} ms{Color.RESET}" if pypi_lat is not None else f"{Color.RED}Unreachable{Color.RESET}"
+
+    if github_lat is None:
+        total_score -= 25
+
+    print(f"   • DNS Resolution (github.com) : {dns_str}")
+    print(f"   • GitHub.com TLS Latency      : {gh_str}")
+    print(f"   • PyPI.org TLS Latency        : {pypi_str}\n")
+
+    # 6. Overall Health Score & Recommendations
+    total_score = max(0, min(100, total_score))
+    score_color = Color.GREEN if total_score >= 80 else (Color.YELLOW if total_score >= 50 else Color.RED)
+
+    print(f" {Color.BOLD}6. DIAGNOSTIC SUMMARY & HEALTH SCORE{Color.RESET}")
+    print(f"   Health Score : {score_color}{Color.BOLD}{total_score}/100{Color.RESET}")
+
+    if total_score >= 90:
+        print(f"   Status       : {Color.GREEN}System is in prime condition for ethical hacking & pentesting.{Color.RESET}")
+    elif total_score >= 70:
+        print(f"   Status       : {Color.YELLOW}System is ready, but optional runtimes (Go, Rust, or Ruby) will unlock more tools.{Color.RESET}")
+    else:
+        print(f"   Status       : {Color.RED}Action required: Missing essential build runtimes or network access.{Color.RESET}")
+
+    if missing_critical or missing_optional:
+        print(f"\n {Color.BOLD}Recommended Installation Commands for {info['os_name']}:{Color.RESET}")
+        pm = info["pkg_manager"]
+        if pm == "apt":
+            pkgs = []
+            if "Go (Golang)" in missing_optional: pkgs.append("golang-go")
+            if "Cargo (Rust)" in missing_optional: pkgs.append("cargo")
+            if "Node.js" in missing_optional or "NPM" in missing_optional: pkgs.extend(["nodejs", "npm"])
+            if "Ruby" in missing_optional: pkgs.append("ruby-full")
+            if "Make" in missing_optional or "GCC / Clang" in missing_optional: pkgs.append("build-essential")
+            if "Docker" in missing_optional: pkgs.append("docker.io")
+            if pkgs:
+                print(f"   {Color.CYAN}sudo apt update && sudo apt install -y {' '.join(pkgs)}{Color.RESET}")
+        elif pm == "brew":
+            pkgs = []
+            if "Go (Golang)" in missing_optional: pkgs.append("go")
+            if "Cargo (Rust)" in missing_optional: pkgs.append("rust")
+            if "Node.js" in missing_optional or "NPM" in missing_optional: pkgs.append("node")
+            if "Ruby" in missing_optional: pkgs.append("ruby")
+            if "Docker" in missing_optional: pkgs.append("docker")
+            if pkgs:
+                print(f"   {Color.CYAN}brew install {' '.join(pkgs)}{Color.RESET}")
+        elif pm == "pacman":
+            pkgs = []
+            if "Go (Golang)" in missing_optional: pkgs.append("go")
+            if "Cargo (Rust)" in missing_optional: pkgs.append("rust")
+            if "Node.js" in missing_optional: pkgs.append("nodejs")
+            if "Ruby" in missing_optional: pkgs.append("ruby")
+            if "Make" in missing_optional: pkgs.append("base-devel")
+            if pkgs:
+                print(f"   {Color.CYAN}sudo pacman -S --needed {' '.join(pkgs)}{Color.RESET}")
+        elif pm in ("dnf", "yum"):
+            pkgs = []
+            if "Go (Golang)" in missing_optional: pkgs.append("golang")
+            if "Cargo (Rust)" in missing_optional: pkgs.append("cargo")
+            if "Node.js" in missing_optional: pkgs.append("nodejs")
+            if "Ruby" in missing_optional: pkgs.append("ruby")
+            if pkgs:
+                print(f"   {Color.CYAN}sudo {pm} install -y {' '.join(pkgs)}{Color.RESET}")
+        elif pm == "winget":
+            print(f"   {Color.CYAN}winget install GoLang.Go{Color.RESET}")
+            print(f"   {Color.CYAN}winget install Rustlang.Rustup{Color.RESET}")
+            print(f"   {Color.CYAN}winget install OpenJS.NodeJS.LTS{Color.RESET}")
+
+    print()
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+
+# ==============================================================================
+#  DISK SPACE & STORAGE MANAGER (FEATURE 9)
+# ==============================================================================
+
+def format_bytes(byte_count):
+    """Format bytes into human-readable B, KB, MB, GB, TB string."""
+    units = ["B", "KB", "MB", "GB", "TB"]
+    size = float(byte_count)
+    unit_idx = 0
+    while size >= 1024.0 and unit_idx < len(units) - 1:
+        size /= 1024.0
+        unit_idx += 1
+    return f"{size:.2f} {units[unit_idx]}"
+
+def get_directory_size_and_count(dir_path):
+    """Calculate recursive total byte size and file count."""
+    total_size = 0
+    file_count = 0
+    try:
+        for root, dirs, files in os.walk(dir_path):
+            for f in files:
+                fp = os.path.join(root, f)
+                try:
+                    if not os.path.islink(fp):
+                        total_size += os.path.getsize(fp)
+                        file_count += 1
+                except (OSError, FileNotFoundError):
+                    pass
+    except Exception:
+        pass
+    return total_size, file_count
+
+def run_storage_manager(target_dir, interactive=True):
+    """
+    Inspect disk footprint of all installed tools in target directory,
+    displaying size ranking table and volume usage metrics.
+    """
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== DISK SPACE & STORAGE MANAGER ==={Color.RESET}")
+    print(f" Target Directory: {Color.GREEN}{target_dir}{Color.RESET}\n")
+
+    if not os.path.exists(target_dir):
+        print(f" {Color.WARN} Target directory does not exist yet. No tools installed.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
+
+    subdirs = [os.path.join(target_dir, d) for d in os.listdir(target_dir)
+               if os.path.isdir(os.path.join(target_dir, d))]
+
+    if not subdirs:
+        print(f" {Color.WARN} No tool folders found in {target_dir}.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
+
+    print(f" {Color.STEP} Analyzing disk space for {len(subdirs)} tool folders (this may take a few seconds)...")
+    tool_sizes = []
+    total_tools_bytes = 0
+
+    for d in subdirs:
+        folder_name = os.path.basename(d)
+        size, fcount = get_directory_size_and_count(d)
+        total_tools_bytes += size
+
+        # Check git commit count if repo
+        commits = "-"
+        if os.path.exists(os.path.join(d, ".git")):
+            c_res = subprocess.run(["git", "-C", d, "rev-list", "--count", "HEAD"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if c_res.returncode == 0:
+                commits = c_res.stdout.strip()
+
+        has_venv = os.path.exists(os.path.join(d, ".venv"))
+        tool_sizes.append((folder_name, size, fcount, commits, has_venv))
+
+    # Sort descending by size
+    tool_sizes.sort(key=lambda x: x[1], reverse=True)
+
+    print(f"\n {Color.DARK}┌" + "─" * 4 + "┬" + "─" * 26 + "┬" + "─" * 14 + "┬" + "─" * 10 + "┬" + "─" * 10 + "┬" + "─" * 8 + f"┐{Color.RESET}")
+    print(f" {Color.DARK}│{Color.RESET} {Color.BOLD}{'#':<2}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Tool Folder':<24}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Disk Size':<12}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Files':<8}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'Commits':<8}{Color.RESET} {Color.DARK}│{Color.RESET} {Color.BOLD}{'.venv':<6}{Color.RESET} {Color.DARK}│{Color.RESET}")
+    print(f" {Color.DARK}├" + "─" * 4 + "┼" + "─" * 26 + "┼" + "─" * 14 + "┼" + "─" * 10 + "┼" + "─" * 10 + "┼" + "─" * 8 + f"┤{Color.RESET}")
+
+    for idx, (name, size, fcount, commits, has_venv) in enumerate(tool_sizes[:25], 1):
+        v_str = f"{Color.GREEN}yes{Color.RESET}" if has_venv else f"{Color.DIM}no{Color.RESET}"
+        print(f" {Color.DARK}│{Color.RESET} {idx:<2} {Color.DARK}│{Color.RESET} {name[:24]:<24} {Color.DARK}│{Color.RESET} {Color.BOLD}{format_bytes(size):<12}{Color.RESET} {Color.DARK}│{Color.RESET} {fcount:<8} {Color.DARK}│{Color.RESET} {commits:<8} {Color.DARK}│{Color.RESET} {v_str:<15} {Color.DARK}│{Color.RESET}")
+
+    print(f" {Color.DARK}└" + "─" * 4 + "┴" + "─" * 26 + "┴" + "─" * 14 + "┴" + "─" * 10 + "┴" + "─" * 10 + "┴" + "─" * 8 + f"┘{Color.RESET}")
+
+    if len(tool_sizes) > 25:
+        print(f" {Color.DIM}... and {len(tool_sizes) - 25} more tools not shown.{Color.RESET}")
+
+    print(f"\n {Color.BOLD}Storage Summary:{Color.RESET}")
+    print(f"   • Total Space Consumed : {Color.GREEN}{Color.BOLD}{format_bytes(total_tools_bytes)}{Color.RESET} in {len(tool_sizes)} tool directories")
+
+    try:
+        usage = shutil.disk_usage(target_dir)
+        print(f"   • Free Volume Space    : {Color.CYAN}{format_bytes(usage.free)}{Color.RESET} of {format_bytes(usage.total)}")
+    except Exception:
+        pass
+
+    if interactive and sys.stdin.isatty():
+        print(f"\n {Color.BOLD}Options:{Color.RESET} [c] Run disk cache cleaner │ [Enter] Return to main menu")
+        act = input(f" {Color.YELLOW}Select an action: {Color.RESET}").strip().lower()
+        if act == "c":
+            clean_storage_cache(target_dir, interactive=True)
+
+def clean_storage_cache(target_dir, interactive=True):
+    """
+    Purge Python bytecode (__pycache__, *.pyc), pytest caches, temporary build files,
+    and run 'git gc' to optimize loose object storage.
+    """
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.YELLOW}=== DISK SPACE CLEANER & CACHE PURGER ==={Color.RESET}")
+    print(f" Target Directory: {Color.CYAN}{target_dir}{Color.RESET}\n")
+
+    if not os.path.exists(target_dir):
+        print(f" {Color.WARN} Target directory does not exist.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return...{Color.RESET}")
+        return
+
+    print(f" {Color.STEP} Scanning for removable caches, bytecode, and temp files...")
+
+    pycache_dirs = []
+    cache_dirs = []
+    pyc_files = []
+    bytes_found = 0
+
+    cache_dir_names = {".pytest_cache", ".mypy_cache", ".tox", ".coverage", ".cache"}
+
+    for root, dirs, files in os.walk(target_dir):
+        for d in list(dirs):
+            if d == "__pycache__":
+                full_p = os.path.join(root, d)
+                pycache_dirs.append(full_p)
+                sz, _ = get_directory_size_and_count(full_p)
+                bytes_found += sz
+            elif d in cache_dir_names:
+                full_p = os.path.join(root, d)
+                cache_dirs.append(full_p)
+                sz, _ = get_directory_size_and_count(full_p)
+                bytes_found += sz
+
+        for f in files:
+            if f.endswith((".pyc", ".pyo", ".pyd")):
+                full_f = os.path.join(root, f)
+                pyc_files.append(full_f)
+                try:
+                    bytes_found += os.path.getsize(full_f)
+                except Exception:
+                    pass
+
+    git_repos = [os.path.join(target_dir, d) for d in os.listdir(target_dir)
+                 if os.path.isdir(os.path.join(target_dir, d)) and os.path.exists(os.path.join(target_dir, d, ".git"))]
+
+    print(f"   • Python Bytecode Directories (__pycache__) : {len(pycache_dirs)}")
+    print(f"   • Test & Tool Cache Directories            : {len(cache_dirs)}")
+    print(f"   • Orphan Bytecode Files (*.pyc)             : {len(pyc_files)}")
+    print(f"   • Git Repositories Eligible for 'git gc'    : {len(git_repos)}")
+    print(f"   • Estimated Space Reclaimable               : {Color.GREEN}{Color.BOLD}{format_bytes(bytes_found)}{Color.RESET}\n")
+
+    if not pycache_dirs and not cache_dirs and not pyc_files and not git_repos:
+        print(f" {Color.SUCCESS} Everything is clean! No temporary caches found.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return...{Color.RESET}")
+        return
+
+    if interactive and sys.stdin.isatty():
+        conf = input(f" {Color.BOLD}Proceed with purging caches and running git gc optimization? [Y/n]: {Color.RESET}").strip().lower()
+        if conf not in ("", "y", "yes"):
+            print(f" {Color.INFO} Cleaning cancelled.")
+            time.sleep(1)
+            return
+
+    freed_bytes = 0
+    for p in pycache_dirs:
+        try:
+            sz, _ = get_directory_size_and_count(p)
+            shutil.rmtree(p, ignore_errors=True)
+            freed_bytes += sz
+        except Exception:
+            pass
+
+    for c in cache_dirs:
+        try:
+            sz, _ = get_directory_size_and_count(c)
+            shutil.rmtree(c, ignore_errors=True)
+            freed_bytes += sz
+        except Exception:
+            pass
+
+    for f in pyc_files:
+        try:
+            sz = os.path.getsize(f)
+            os.remove(f)
+            freed_bytes += sz
+        except Exception:
+            pass
+
+    print(f" {Color.STEP} Running git garbage collection and repository repacking...")
+    for repo in git_repos:
+        subprocess.run(["git", "-C", repo, "gc", "--auto", "--quiet"],
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    print(f"\n {Color.SUCCESS} Disk cleanup complete! Reclaimed {Color.GREEN}{Color.BOLD}{format_bytes(freed_bytes)}{Color.RESET} of disk space.\n")
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return...{Color.RESET}")
+
+# ==============================================================================
+#  CONFIGURATION EXPORT & IMPORT (FEATURE 7)
+# ==============================================================================
+
+def export_configuration(target_dir, filepath=None, interactive=True):
+    """
+    Export current installation state, tools list, git commits, and environment
+    metadata into a reproducible JSON manifest.
+    """
+    if not filepath:
+        default_file = os.path.join(target_dir, "setup-hack-manifest.json")
+        if interactive and sys.stdin.isatty():
+            clear_screen()
+            display_banner()
+            print(f" {Color.BOLD}{Color.CYAN}=== EXPORT TOOL ENVIRONMENT MANIFEST ==={Color.RESET}\n")
+            print(f" Target Directory : {Color.GREEN}{target_dir}{Color.RESET}")
+            ans = input(f" {Color.YELLOW}Enter export file path (or press Enter for '{default_file}'): {Color.RESET}").strip()
+            filepath = os.path.abspath(os.path.expanduser(ans)) if ans else default_file
+        else:
+            filepath = default_file
+
+    if not os.path.exists(target_dir):
+        print(f" {Color.ERROR} Target directory {target_dir} does not exist.")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return...{Color.RESET}")
+        return False
+
+    subdirs = [os.path.join(target_dir, d) for d in os.listdir(target_dir)
+               if os.path.isdir(os.path.join(target_dir, d))]
+
+    installed_tools = []
+    catalog_by_folder = {t.folder.lower(): t for t in TOOL_CATALOG}
+
+    for d in sorted(subdirs):
+        folder_name = os.path.basename(d)
+        if folder_name.startswith(".") or folder_name in ("__pycache__", "assets"):
+            continue
+        is_git = os.path.exists(os.path.join(d, ".git"))
+        commit = ""
+        branch = ""
+        repo_url = ""
+
+        if is_git:
+            c_res = subprocess.run(["git", "-C", d, "rev-parse", "HEAD"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if c_res.returncode == 0:
+                commit = c_res.stdout.strip()
+
+            b_res = subprocess.run(["git", "-C", d, "rev-parse", "--abbrev-ref", "HEAD"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if b_res.returncode == 0:
+                branch = b_res.stdout.strip()
+
+            r_res = subprocess.run(["git", "-C", d, "config", "--get", "remote.origin.url"],
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            if r_res.returncode == 0:
+                repo_url = r_res.stdout.strip()
+
+        cat_tool = catalog_by_folder.get(folder_name.lower())
+        tool_name = cat_tool.name if cat_tool else folder_name
+        category = cat_tool.category if cat_tool else "Custom"
+        if not repo_url and cat_tool:
+            repo_url = cat_tool.repo
+
+        has_venv = os.path.exists(os.path.join(d, ".venv"))
+
+        installed_tools.append({
+            "name": tool_name,
+            "folder": folder_name,
+            "repo": repo_url,
+            "branch": branch,
+            "commit": commit,
+            "category": category,
+            "has_venv": has_venv
+        })
+
+    manifest = {
+        "manifest_version": "1.0.0",
+        "app": "setup_hack_env",
+        "version": "4.0.0",
+        "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        "platform": {
+            "os_name": PLATFORM_INFO["os_name"],
+            "os_type": PLATFORM_INFO["os_type"],
+            "architecture": platform.machine()
+        },
+        "target_dir": target_dir,
+        "tool_count": len(installed_tools),
+        "tools": installed_tools
+    }
+
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(filepath)), exist_ok=True)
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(manifest, f, indent=2)
+
+        print(f"\n {Color.SUCCESS} Environment manifest successfully exported!")
+        print(f"   • Path         : {Color.CYAN}{filepath}{Color.RESET}")
+        print(f"   • Tools Count  : {Color.BOLD}{len(installed_tools)}{Color.RESET} tools recorded")
+        print(f"   • File Size    : {format_bytes(os.path.getsize(filepath))}\n")
+    except Exception as e:
+        print(f"\n {Color.ERROR} Failed to write manifest: {e}\n")
+        return False
+
+    if interactive and sys.stdin.isatty():
+        input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+    return True
+
+def import_configuration(filepath, target_dir=None, interactive=True, use_venv=True):
+    """
+    Import and restore an environment from a setup-hack JSON manifest.
+    """
+    if not os.path.exists(filepath):
+        print(f" {Color.ERROR} Manifest file not found: {filepath}")
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return...{Color.RESET}")
+        return False
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        print(f" {Color.ERROR} Failed to parse manifest JSON: {e}")
+        return False
+
+    tools_data = data.get("tools", [])
+    if not tools_data:
+        print(f" {Color.WARN} No tools found in manifest.")
+        return False
+
+    dest = target_dir or data.get("target_dir") or str(Path.home() / "Tools")
+
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== IMPORT TOOL ENVIRONMENT MANIFEST ==={Color.RESET}\n")
+    print(f" Manifest File    : {Color.GREEN}{filepath}{Color.RESET}")
+    print(f" Created On       : {data.get('timestamp', 'Unknown')}")
+    print(f" Source OS        : {data.get('platform', {}).get('os_name', 'Unknown')}")
+    print(f" Target Directory : {Color.CYAN}{dest}{Color.RESET}")
+    print(f" Total Tools      : {Color.BOLD}{len(tools_data)}{Color.RESET}\n")
+
+    catalog_by_name = {t.name.lower(): t for t in TOOL_CATALOG}
+    tools_to_install = []
+
+    for t_item in tools_data:
+        name = t_item.get("name", "")
+        repo = t_item.get("repo", "")
+        folder = t_item.get("folder", "")
+        category = t_item.get("category", "Imported")
+        has_venv = t_item.get("has_venv", False)
+
+        cat_tool = catalog_by_name.get(name.lower())
+        if cat_tool:
+            tools_to_install.append(cat_tool)
+        elif repo and folder:
+            custom_t = Tool(
+                name=name or folder,
+                repo=repo,
+                folder=folder,
+                category=category,
+                description=f"Manifest imported repository: {name}",
+                install_type="pip" if has_venv else "none"
+            )
+            tools_to_install.append(custom_t)
+
+    if interactive and sys.stdin.isatty():
+        confirm = input(f" {Color.BOLD}Proceed with installing {len(tools_to_install)} tools to {dest}? [Y/n]: {Color.RESET}").strip().lower()
+        if confirm not in ("", "y", "yes"):
+            print(f" {Color.INFO} Import aborted by user.")
+            time.sleep(1)
+            return False
+
+    run_installation_batch(tools_to_install, dest, interactive=interactive, use_venv=use_venv)
+    return True
+
+# ==============================================================================
+#  DOCKER SANDBOX & CONTAINERIZED ENVIRONMENT (FEATURE 6)
+# ==============================================================================
+
+DOCKERFILE_CONTENT = """# SETUP_HACK_ENV: Containerized Ethical Hacking & Penetration Testing Suite
+FROM kalilinux/kali-rolling:latest
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TERM=xterm-256color
+ENV LANG=C.UTF-8
+
+WORKDIR /opt/setup_hack_env
+
+# Install core Linux build tools, python, git, go, curl, and network essentials
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    build-essential \\
+    git \\
+    curl \\
+    wget \\
+    python3 \\
+    python3-pip \\
+    python3-venv \\
+    python3-dev \\
+    golang-go \\
+    libssl-dev \\
+    libffi-dev \\
+    p7zip-full \\
+    net-tools \\
+    dnsutils \\
+    whois \\
+    nmap \\
+    tcpdump \\
+    ca-certificates \\
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy repository contents into container
+COPY . /opt/setup_hack_env/
+
+# Create persistent tools mount directory
+RUN mkdir -p /tools && chmod 777 /tools
+
+ENV TOOLS_DIR=/tools
+WORKDIR /opt/setup_hack_env
+
+ENTRYPOINT ["python3", "setup-hack.py", "--dir", "/tools"]
+"""
+
+DOCKER_COMPOSE_CONTENT = """version: "3.8"
+
+services:
+  setup-hack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: setup-hack-env:latest
+    container_name: setup_hack_container
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - ./tools:/tools
+    environment:
+      - TERM=xterm-256color
+    restart: unless-stopped
+"""
+
+def create_docker_artifacts(repo_dir=None):
+    """Generate root Dockerfile and docker-compose.yml files."""
+    base_dir = repo_dir or os.path.dirname(os.path.abspath(__file__))
+    df_path = os.path.join(base_dir, "Dockerfile")
+    dc_path = os.path.join(base_dir, "docker-compose.yml")
+
+    created = []
+    if not os.path.exists(df_path):
+        with open(df_path, "w", encoding="utf-8") as f:
+            f.write(DOCKERFILE_CONTENT)
+        created.append("Dockerfile")
+
+    if not os.path.exists(dc_path):
+        with open(dc_path, "w", encoding="utf-8") as f:
+            f.write(DOCKER_COMPOSE_CONTENT)
+        created.append("docker-compose.yml")
+
+    return created
+
+def setup_docker_environment(interactive=True):
+    """
+    Manage containerized Docker sandbox environment:
+      - Verify Docker installation
+      - Generate Dockerfile & docker-compose.yml
+      - Build image and launch interactive container shell
+    """
+    clear_screen()
+    display_banner()
+    print(f" {Color.BOLD}{Color.CYAN}=== DOCKER CONTAINER SANDBOX ENVIRONMENT ==={Color.RESET}\n")
+
+    docker_bin = shutil.which("docker")
+    if not docker_bin:
+        print(f" {Color.ERROR} Docker is not installed or not available in system PATH!")
+        print(f" {Color.INFO} Install Docker to run tools in an isolated sandbox without host modification:")
+        info = PLATFORM_INFO
+        if info["os_type"] == "macOS":
+            print(f"   Download Docker Desktop for Mac: https://www.docker.com/products/docker-desktop/")
+            print(f"   Or run: brew install --cask docker")
+        elif info["os_type"] == "Windows":
+            print(f"   Download Docker Desktop for Windows: https://www.docker.com/products/docker-desktop/")
+            print(f"   Or run: winget install Docker.DockerDesktop")
+        else:
+            print(f"   Debian/Ubuntu/Kali: sudo apt install -y docker.io docker-compose")
+            print(f"   Arch Linux        : sudo pacman -S docker docker-compose")
+            print(f"   Fedora            : sudo dnf install -y docker docker-compose")
+        print()
+        if interactive and sys.stdin.isatty():
+            input(f" {Color.DIM}Press Enter to return to main menu...{Color.RESET}")
+        return
+
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    df_path = os.path.join(base_dir, "Dockerfile")
+    dc_path = os.path.join(base_dir, "docker-compose.yml")
+
+    if not os.path.exists(df_path) or not os.path.exists(dc_path):
+        created = create_docker_artifacts(base_dir)
+        if created:
+            print(f" {Color.SUCCESS} Generated container artifacts: {', '.join(created)}")
+
+    print(f" Docker Status : {Color.GREEN}Available ({docker_bin}){Color.RESET}")
+    print(f" Dockerfile    : {Color.DIM}{df_path}{Color.RESET}")
+    print(f" Compose File  : {Color.DIM}{dc_path}{Color.RESET}\n")
+
+    print(f" {Color.BOLD}Select a Docker action:{Color.RESET}\n")
+    print(f"  {Color.CYAN}[1]{Color.RESET} {Color.BOLD}🔨 Build Docker Sandbox Image{Color.RESET}     {Color.DIM}- Build setup-hack-env:latest{Color.RESET}")
+    print(f"  {Color.CYAN}[2]{Color.RESET} {Color.BOLD}🚀 Launch Interactive Container{Color.RESET}       {Color.DIM}- Run setup-hack inside Docker (tools mounted to ./tools){Color.RESET}")
+    print(f"  {Color.CYAN}[3]{Color.RESET} {Color.BOLD}🎯 Run Role Profile in Docker{Color.RESET}         {Color.DIM}- e.g. install bug-bounty in container{Color.RESET}")
+    print(f"  {Color.CYAN}[4]{Color.RESET} {Color.BOLD}🔄 Refresh Dockerfile & Compose{Color.RESET}       {Color.DIM}- Overwrite with latest Kali template{Color.RESET}")
+    print(f"  {Color.RED}[0]{Color.RESET} Return to main menu\n")
+
+    choice = input(f" {Color.BOLD}Select option [0-4]: {Color.RESET}").strip()
+
+    if choice == "1":
+        print(f"\n {Color.STEP} Building Docker image 'setup-hack-env:latest'...")
+        subprocess.run(["docker", "build", "-t", "setup-hack-env:latest", base_dir])
+        if interactive and sys.stdin.isatty():
+            input(f"\n {Color.DIM}Press Enter to return...{Color.RESET}")
+    elif choice == "2":
+        print(f"\n {Color.STEP} Starting containerized session...")
+        tools_mount = os.path.abspath(os.path.join(base_dir, "tools"))
+        os.makedirs(tools_mount, exist_ok=True)
+        if shutil.which("docker-compose"):
+            subprocess.run(["docker-compose", "run", "--rm", "setup-hack"], cwd=base_dir)
+        else:
+            subprocess.run(["docker", "run", "-it", "--rm", "-v", f"{tools_mount}:/tools", "setup-hack-env:latest"])
+    elif choice == "3":
+        prof_name = input(f"\n {Color.YELLOW}Enter profile name (e.g. bug-bounty, osint, red-team): {Color.RESET}").strip()
+        if prof_name:
+            tools_mount = os.path.abspath(os.path.join(base_dir, "tools"))
+            os.makedirs(tools_mount, exist_ok=True)
+            subprocess.run(["docker", "run", "-it", "--rm", "-v", f"{tools_mount}:/tools", "setup-hack-env:latest", "--profile", prof_name])
+    elif choice == "4":
+        with open(df_path, "w", encoding="utf-8") as f:
+            f.write(DOCKERFILE_CONTENT)
+        with open(dc_path, "w", encoding="utf-8") as f:
+            f.write(DOCKER_COMPOSE_CONTENT)
+        print(f"\n {Color.SUCCESS} Refreshed Dockerfile and docker-compose.yml successfully!")
+        time.sleep(1.5)
+
+# ==============================================================================
+#  GIT CHECK UTILITY
+# ==============================================================================
 
 def check_git_installed():
     """Verify that Git is installed and available in system PATH."""
@@ -1652,27 +2658,153 @@ def check_git_installed():
     return True
 
 # ==============================================================================
+#  MAIN INTERACTIVE MENU
+# ==============================================================================
+
+def main_menu(default_target_dir):
+    """Central interactive menu loop."""
+    target_dir_ref = [default_target_dir]
+
+    while True:
+        clear_screen()
+        display_banner()
+        display_status_header(target_dir_ref[0])
+
+        print(f" {Color.BOLD}PRIMARY ACTIONS:{Color.RESET}\n")
+        print(f"  {Color.CYAN}[1]{Color.RESET}  {Color.BOLD}⚡ Quick Install All Tools{Color.RESET}        {Color.DIM}- Install complete 65+ curated tool suite{Color.RESET}")
+        print(f"  {Color.CYAN}[2]{Color.RESET}  {Color.BOLD}🗂  Category Selector{Color.RESET}              {Color.DIM}- Choose tools by security domain{Color.RESET}")
+        print(f"  {Color.CYAN}[3]{Color.RESET}  {Color.BOLD}🎯 Role Presets & Profiles{Color.RESET}        {Color.DIM}- Bug Bounty, OSINT, Red Team, Wireless, Forensics{Color.RESET}")
+        print(f"  {Color.CYAN}[4]{Color.RESET}  {Color.BOLD}☑  Interactive Checkbox Selector{Color.RESET}  {Color.DIM}- Spacebar select with live search filter [/]{Color.RESET}")
+        print(f"  {Color.CYAN}[5]{Color.RESET}  {Color.BOLD}🔄 Update All Installed Tools{Color.RESET}      {Color.DIM}- Git pull updater across existing repos{Color.RESET}")
+        print(f"  {Color.CYAN}[6]{Color.RESET}  {Color.BOLD}🩺 Pre-Flight System Doctor{Color.RESET}        {Color.DIM}- Compilers, runtimes, latency, disk health{Color.RESET}")
+        print(f"  {Color.CYAN}[7]{Color.RESET}  {Color.BOLD}💾 Storage Manager & Disk Cleaner{Color.RESET} {Color.DIM}- Inspect tool disk usage and purge caches{Color.RESET}")
+        print(f"  {Color.CYAN}[8]{Color.RESET}  {Color.BOLD}📦 Export / Import Setup Manifest{Color.RESET} {Color.DIM}- Save or restore reproducible environments{Color.RESET}")
+        print(f"  {Color.CYAN}[9]{Color.RESET}  {Color.BOLD}🐳 Docker Container Sandbox{Color.RESET}       {Color.DIM}- Isolated containerized environment{Color.RESET}")
+        print(f"  {Color.CYAN}[10]{Color.RESET} {Color.BOLD}🛠  System Prerequisites & Apt{Color.RESET}    {Color.DIM}- Core Linux headers, Tor, Wordlists, build tools{Color.RESET}")
+        print(f"  {Color.CYAN}[11]{Color.RESET} {Color.BOLD}📁 Change Destination Directory{Color.RESET}  {Color.DIM}- Current: {target_dir_ref[0]}{Color.RESET}")
+        print(f"  {Color.CYAN}[12]{Color.RESET} {Color.BOLD}📋 View Tool Catalog & Sources{Color.RESET}   {Color.DIM}- Inspect official upstream repositories{Color.RESET}")
+        print(f"  {Color.RED}[0]{Color.RESET}  {Color.BOLD}🚪 Exit{Color.RESET}\n")
+
+        choice = input(f" {Color.BOLD}Select an option [0-12]: {Color.RESET}").strip()
+
+        if choice == "1":
+            confirm = input(f" {Color.YELLOW}Install ALL {len(TOOL_CATALOG)} tools to {target_dir_ref[0]}? [y/N]: {Color.RESET}").strip().lower()
+            if confirm == "y":
+                run_installation_batch(TOOL_CATALOG, target_dir_ref[0], interactive=True)
+        elif choice == "2":
+            selected = category_selector(target_dir_ref)
+            if selected:
+                run_installation_batch(selected, target_dir_ref[0], interactive=True)
+        elif choice == "3":
+            selected = profile_selector(target_dir_ref)
+            if selected:
+                run_installation_batch(selected, target_dir_ref[0], interactive=True)
+        elif choice == "4":
+            if sys.stdin.isatty():
+                selected = interactive_checkbox_selector(TOOL_CATALOG, target_dir_ref)
+            else:
+                selected = fallback_numbered_selector(TOOL_CATALOG)
+            if selected:
+                run_installation_batch(selected, target_dir_ref[0], interactive=True)
+        elif choice == "5":
+            update_all_installed_tools(target_dir_ref[0], interactive=True)
+        elif choice == "6":
+            run_doctor_diagnostics(interactive=True)
+        elif choice == "7":
+            run_storage_manager(target_dir_ref[0], interactive=True)
+        elif choice == "8":
+            print(f"\n {Color.BOLD}Manifest Actions:{Color.RESET} [1] Export current setup │ [2] Import manifest")
+            m_act = input(f" {Color.YELLOW}Choose [1/2]: {Color.RESET}").strip()
+            if m_act == "1":
+                export_configuration(target_dir_ref[0], interactive=True)
+            elif m_act == "2":
+                m_file = input(f" {Color.YELLOW}Enter manifest JSON file path: {Color.RESET}").strip()
+                if m_file:
+                    import_configuration(os.path.abspath(os.path.expanduser(m_file)), target_dir_ref[0], interactive=True)
+        elif choice == "9":
+            setup_docker_environment(interactive=True)
+        elif choice == "10":
+            install_system_prerequisites(interactive=True)
+        elif choice == "11":
+            print(f"\n {Color.BOLD}Current target directory:{Color.RESET} {Color.CYAN}{target_dir_ref[0]}{Color.RESET}")
+            new_path = input(f" {Color.YELLOW}Enter new destination directory path: {Color.RESET}").strip()
+            if new_path:
+                target_dir_ref[0] = os.path.abspath(os.path.expanduser(new_path))
+                print(f" {Color.SUCCESS} Destination directory set to: {target_dir_ref[0]}")
+                time.sleep(1)
+        elif choice == "12":
+            display_tool_catalog(interactive=True)
+        elif choice in ("0", "q", "exit"):
+            print(f"\n {Color.GREEN}Exiting. Stay ethical and keep learning!{Color.RESET}\n")
+            sys.exit(0)
+
+# ==============================================================================
 #  CLI ARGUMENT PARSING & ENTRYPOINT
 # ==============================================================================
 
 def main():
     default_dir = os.path.normpath(str(Path.home() / "Tools"))
     parser = argparse.ArgumentParser(
-        description="SETUP_HACK_ENV: Advanced Ethical Hacking & Pentesting Environment Suite"
+        description="SETUP_HACK_ENV: Advanced Ethical Hacking & Penetration Testing Suite"
     )
     parser.add_argument("-a", "--all", action="store_true", help="Install all tools without interactive prompts")
+    parser.add_argument("-p", "--profile", type=str, help="Install specific role profile (e.g. bug-bounty, osint, red-team, network, wireless, forensics, essential)")
+    parser.add_argument("--list-profiles", action="store_true", help="List all available preset profiles and included tools")
     parser.add_argument("-u", "--update", action="store_true", help="Update all installed tools in target directory")
     parser.add_argument("-l", "--list", action="store_true", help="List all available tools and official links")
     parser.add_argument("-d", "--dir", type=str, default=default_dir, help=f"Destination directory for cloning tools (default: {default_dir})")
     parser.add_argument("-c", "--category", type=str, help="Install specific category (comma-separated)")
     parser.add_argument("-t", "--tools", type=str, help="Install specific tool names (comma-separated, e.g. sherlock,sqlmap)")
+    parser.add_argument("--doctor", action="store_true", help="Run pre-flight environment diagnostics and compiler checks")
+    parser.add_argument("--storage", action="store_true", help="Inspect disk footprint and storage metrics of installed tools")
+    parser.add_argument("--clean", action="store_true", help="Purge Python bytecode, test caches, and optimize git repositories")
+    parser.add_argument("--export", nargs="?", const="", type=str, help="Export installed tools manifest JSON")
+    parser.add_argument("--import", dest="import_file", type=str, help="Import and install tools from manifest JSON")
+    parser.add_argument("--docker", action="store_true", help="Launch or manage containerized Docker sandbox")
+    parser.add_argument("--venv", action="store_true", default=True, help="Use isolated virtual environments (.venv) per tool (default: True)")
+    parser.add_argument("--no-venv", action="store_false", dest="venv", help="Disable isolated virtual environments, use global python")
     parser.add_argument("--deps", action="store_true", help="Install core Linux/macOS/Windows dependencies and packages")
     parser.add_argument("--no-interactive", action="store_true", help="Disable raw TTY interactive screens")
 
     args = parser.parse_args()
     target_dir = os.path.abspath(os.path.expanduser(args.dir))
+    use_venv = args.venv
 
     # Fast path CLI flags
+    if args.list_profiles:
+        print(f"\n {Color.BOLD}{Color.YELLOW}=== AVAILABLE ROLE PROFILES ==={Color.RESET}\n")
+        for p_key, prof in PROFILES.items():
+            print(f"  {Color.CYAN}{p_key:<16}{Color.RESET} - {Color.BOLD}{prof['name']}{Color.RESET} ({len(prof['tools'])} tools)")
+            print(f"    {Color.DIM}{prof['description']}{Color.RESET}")
+            print(f"    Tools: {', '.join(prof['tools'][:8])}...")
+            print()
+        return
+
+    if args.doctor:
+        run_doctor_diagnostics(interactive=False)
+        return
+
+    if args.storage:
+        run_storage_manager(target_dir, interactive=False)
+        return
+
+    if args.clean:
+        clean_storage_cache(target_dir, interactive=False)
+        return
+
+    if args.export is not None:
+        export_file = args.export if args.export else os.path.join(target_dir, "setup-hack-manifest.json")
+        export_configuration(target_dir, filepath=export_file, interactive=False)
+        return
+
+    if args.import_file:
+        import_configuration(os.path.abspath(os.path.expanduser(args.import_file)), target_dir, interactive=False, use_venv=use_venv)
+        return
+
+    if args.docker:
+        setup_docker_environment(interactive=False)
+        return
+
     if args.list:
         display_tool_catalog(interactive=False)
         return
@@ -1682,11 +2814,19 @@ def main():
         return
 
     # Check git before performing clone or update operations
-    if (args.all or args.update or args.tools or args.category) and not check_git_installed():
+    if (args.all or args.update or args.tools or args.category or args.profile) and not check_git_installed():
         sys.exit(1)
 
     if args.update:
         update_all_installed_tools(target_dir, interactive=False)
+        return
+
+    if args.profile:
+        matched_tools = get_profile_tools(args.profile)
+        if not matched_tools:
+            print(f" {Color.ERROR} Unknown profile '{args.profile}'. Available profiles: {', '.join(PROFILES.keys())}")
+            sys.exit(1)
+        run_installation_batch(matched_tools, target_dir, interactive=False, use_venv=use_venv)
         return
 
     if args.tools:
@@ -1695,11 +2835,11 @@ def main():
         if not matched_tools:
             print(f" {Color.ERROR} No tools matched '{args.tools}'. Use --list to inspect available tools.")
             sys.exit(1)
-        run_installation_batch(matched_tools, target_dir, interactive=False)
+        run_installation_batch(matched_tools, target_dir, interactive=False, use_venv=use_venv)
         return
 
     if args.all:
-        run_installation_batch(TOOL_CATALOG, target_dir, interactive=False)
+        run_installation_batch(TOOL_CATALOG, target_dir, interactive=False, use_venv=use_venv)
         return
 
     if args.category:
@@ -1710,7 +2850,7 @@ def main():
             for c in CATEGORIES:
                 print(f"   - {c}")
             sys.exit(1)
-        run_installation_batch(matched_tools, target_dir, interactive=False)
+        run_installation_batch(matched_tools, target_dir, interactive=False, use_venv=use_venv)
         return
 
     # Check git before opening interactive menu

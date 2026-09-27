@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  setup-hack:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: setup-hack-env:latest
+    container_name: setup_hack_container
+    stdin_open: true
+    tty: true
+    network_mode: host
+    volumes:
+      - ./tools:/tools
+    environment:
+      - TERM=xterm-256color
+    restart: unless-stopped

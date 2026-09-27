@@ -4,41 +4,53 @@ An advanced, enterprise-grade ethical hacking and penetration testing environmen
 
 Curated with **65+ top-tier cybersecurity tools** fetched directly from their **authentic upstream sources** (ProjectDiscovery, SQLMapProject, Sherlock-Project, Rapid7, and more).
 
-Includes an **interactive terminal checkbox selector** (native arrow keys across Windows `msvcrt` and POSIX `termios`), a **dedicated one-click auto-updater**, custom Cyberpunk ANSI styling, and robust error-tolerant cloning.
+Includes an **interactive terminal checkbox selector with live fuzzy search filtering**, **role-based installation presets**, **isolated virtual environments per tool**, a **pre-flight system doctor**, **disk space manager & cache cleaner**, **JSON configuration export/import**, and **containerized Docker support**.
 
 ![Banner](assets/script-linux.png)
 
 ---
 
-## Key Highlights & Cross-Platform Architecture
+## Key Highlights & Enterprise Architecture
 
 - **Full Cross-Platform Support**:
   - **Linux (All Distros)**: Native support for Debian/Kali/Parrot (`apt`), Arch/Manjaro/BlackArch (`pacman`), Fedora/RHEL/CentOS (`dnf`/`yum`), openSUSE (`zypper`), and Alpine (`apk`).
   - **macOS**: Native support on Apple Silicon (M1/M2/M3/M4) & Intel with Homebrew integration.
   - **Windows**: Native support on Windows 10/11 (PowerShell / Windows Terminal / CMD) with `winget`/`choco` support and `msvcrt` raw key capture.
 - **100% Authentic Upstream Sources**: No third-party forks or obsolete organizations. Every tool is cloned directly from its official creators and foundations.
-- **Cleaned Catalog**: Removed broken and outdated tools (UPI-OSINT, TruecallerJS, deprecated scripts).
-- **Interactive Terminal Checkbox UI**:
-  - `[Up/Down]` Navigate smoothly across all tools (works on Windows, macOS, Linux)
+- **Role-Based Profiles & Presets**: One-click curated bundles for Bug Bounty, OSINT, Red Teaming, Network Auditing, Wireless, Forensics, or Minimal starter setups.
+- **Isolated Virtual Environments (.venv)**: Every Python tool receives its own isolated virtual environment to prevent dependency conflicts (PEP 668 compliant), with auto-generated portable launcher wrappers (`run.sh` / `run.bat`).
+- **Interactive Checkbox UI with Live Search**:
+  - Press `[/]` to instantly filter tools by name, category, or description in real time
+  - `[Up/Down]` or `[k/j]` Navigate smoothly across all tools (works on Windows, macOS, Linux)
   - `[Space]` Toggle tool selection [X] / [ ]
-  - `[a]` Select All / Deselect All
-  - `[c]` Toggle entire category
+  - `[a]` Select / Deselect all visible tools in active search filter
+  - `[c]` Toggle entire category of the focused tool
   - `[d]` Change destination directory on the fly
-  - `[Enter]` Start installation
+  - `[Enter]` Start batch installation
+- **Pre-Flight Environment Doctor**: Audits compilers (Go, Rust, Node, Ruby, GCC, Make), Git, Python, Docker, system packages, storage headroom, and tests live TLS connection latency to GitHub and PyPI.
+- **Storage Manager & Disk Cleaner**: Inspects tool disk usage, ranks largest tools, and provides a safe one-key cache purger for Python bytecode (`__pycache__`), test caches, and git garbage collection (`git gc`).
+- **Configuration Export & Import**: Generates reproducible JSON manifests containing exact tool lists, git commit hashes, branches, and platform metadata for team sync and dotfiles.
+- **Containerized Docker Sandbox**: Ships with production Kali Linux `Dockerfile` and `docker-compose.yml` for isolated operations with persistent host volume mounting.
 - **Smart Git Auto-Updater**:
   - Automatically scans your tools folder (`~/Tools` or custom directory)
   - Runs `git pull` across all installed repositories
-  - Reports branch, commit status (Up to date, Updated, Diverged), and auto-updates Python `requirements.txt`
-- **Fault-Tolerant Cloning Engine**:
-  - No fragile `os.chdir()` cascades
-  - Fast shallow clones (`--depth 1`) with full clone fallback
-  - Detects existing repositories and pulls updates instead of erroring
-  - Modern Python PEP 668 compliance (`--break-system-packages` auto-detection)
-  - Automatic `chmod +x` executable permissions on POSIX systems
-- **Cyberpunk ANSI Aesthetics**:
-  - Modern ASCII art banner with dynamic terminal detection
-  - Color-coded status indicators: Success, Error, Step, Info
-  - Dynamic responsive terminal sizing and live progress tables
+  - Reports branch, commit status, and updates dependencies inside isolated `.venv` environments.
+
+---
+
+## Role-Based Profiles & Presets
+
+Instead of manually picking tools or cloning everything, you can deploy role-tailored security suites using the interactive menu or the `--profile` flag:
+
+| Profile ID | Role Name | Included Tools Highlights |
+|:---|:---|:---|
+| `bug-bounty` | Bug Bounty & Web Hunter | SQLMap, XSStrike, Nuclei, Subfinder, HTTPX, Katana, FFUF, Dalfox, Commix, Arjun, Dirsearch, WhatWeb, CMSeeK, ParamSpider, Wfuzz, Nikto, Sublist3r, SecLists, PayloadsAllTheThings |
+| `osint` | OSINT & Digital Intelligence | Sherlock, theHarvester, PhoneInfoga, Holehe, SpiderFoot, Seeker, Nexfil, FinalRecon, Maigret, Recon-ng, Sublist3r, GHunt, Social-Analyzer, IP-Tracer, Infoga |
+| `red-team` | Red Team & Exploitation | Metasploit-Framework, Sliver, Havoc-C2, Villain, Impacket, Responder, NetExec, PwnCat, Routersploit, PEASS-ng, LinEnum, Linux-Exploit-Suggester, Chisel, Ligolo-ng, PayloadsAllTheThings |
+| `network` | Network & Infrastructure | RustScan, Masscan, Netdiscover, Bettercap, Responder, Impacket, NetExec, Sniffnet, THC-Hydra |
+| `wireless` | Wireless & WiFi Auditing | Airgeddon, Fluxion, Wifite2, EAPHammer, FakeAPBuilder |
+| `forensics` | Forensics & Reverse Engineering | Volatility3, Apktool, JADX, Linux-Exploit-Suggester, PEASS-ng |
+| `essential` | Essential Starter Kit | Sherlock, theHarvester, SQLMap, Nuclei, Subfinder, HTTPX, FFUF, Dirsearch, RustScan, Bettercap, Responder, Impacket, SecLists, THC-Hydra, PEASS-ng |
 
 ---
 
@@ -137,7 +149,7 @@ Includes an **interactive terminal checkbox selector** (native arrow keys across
 git clone https://github.com/karthik558/setup_hack_env.git
 cd setup_hack_env
 
-# 2. Launch the interactive setup
+# 2. Launch the interactive menu
 python3 setup-hack.py
 ```
 
@@ -147,8 +159,18 @@ python3 setup-hack.py
 git clone https://github.com/karthik558/setup_hack_env.git
 cd setup_hack_env
 
-# 2. Launch the interactive setup
+# 2. Launch the interactive menu
 python setup-hack.py
+```
+
+#### Docker Container Sandbox
+Run tools in an isolated Kali Linux container without modifying your host system:
+```bash
+# Build and run interactive session
+docker-compose run --rm setup-hack
+
+# Or run a specific profile directly in Docker
+docker-compose run --rm setup-hack --profile bug-bounty
 ```
 
 > **Privilege Note**:
@@ -157,13 +179,35 @@ python setup-hack.py
 
 ---
 
-## Usage & CLI Options
+## Usage & CLI Commands
 
 You can run `setup-hack.py` interactively or pass command-line arguments for automated deployments:
 
 ```bash
-# Launch rich interactive Cyberpunk menu
+# Launch interactive Cyberpunk menu
 python3 setup-hack.py
+
+# Pre-flight environment diagnostics and compiler checks
+python3 setup-hack.py --doctor
+
+# Install a specific role profile (e.g. bug-bounty or osint)
+python3 setup-hack.py --profile bug-bounty
+python3 setup-hack.py --profile osint
+
+# List all available role presets and included tools
+python3 setup-hack.py --list-profiles
+
+# Inspect tool disk footprint and storage metrics
+python3 setup-hack.py --storage
+
+# Purge Python bytecode, build caches, and optimize git repositories
+python3 setup-hack.py --clean
+
+# Export current installation state to reproducible JSON manifest
+python3 setup-hack.py --export setup-manifest.json
+
+# Import and replicate environment from JSON manifest
+python3 setup-hack.py --import setup-manifest.json
 
 # Update ALL installed tools in ~/Tools
 python3 setup-hack.py --update
@@ -171,7 +215,7 @@ python3 setup-hack.py --update
 # Update tools in a custom directory
 python3 setup-hack.py --update --dir /opt/security-tools
 
-# Quick install ALL 65+ tools non-interactively
+# Quick install ALL tools non-interactively
 python3 setup-hack.py --all
 
 # Install by category (e.g. OSINT and Web tools)
@@ -183,7 +227,7 @@ python3 setup-hack.py --tools "sherlock,sqlmap,nuclei,subfinder"
 # Specify custom destination directory
 python3 setup-hack.py --dir /opt/tools --all
 
-# List all available tools and their authentic upstream URLs
+# List all available tools and official upstream repositories
 python3 setup-hack.py --list
 
 # Install base Linux dependencies & prerequisites
@@ -194,7 +238,17 @@ python3 setup-hack.py --deps
 
 | Flag | Long Flag | Description |
 |:---|:---|:---|
-| `-a` | `--all` | Install all 65+ tools without interactive prompts |
+| `-p <name>` | `--profile <name>` | Install tools from a role profile (`bug-bounty`, `osint`, `red-team`, `network`, `wireless`, `forensics`, `essential`) |
+| | `--list-profiles` | List all available preset profiles and included tools |
+| | `--doctor` | Run pre-flight environment diagnostics, compiler audits, and network latency tests |
+| | `--storage` | Inspect disk footprint and storage metrics of installed tools |
+| | `--clean` | Purge Python bytecode (`__pycache__`), caches, and optimize git repos with `git gc` |
+| | `--export [file]` | Export installed tools manifest JSON |
+| | `--import <file>` | Import and install tools from manifest JSON |
+| | `--docker` | Manage or launch containerized Docker sandbox environment |
+| | `--venv` | Enable isolated Python virtual environments per tool (default: enabled) |
+| | `--no-venv` | Disable isolated virtual environments, use global Python interpreter |
+| `-a` | `--all` | Install all tools without interactive prompts |
 | `-u` | `--update` | Update all installed repositories in destination folder |
 | `-l` | `--list` | Inspect full catalog and upstream source URLs |
 | `-d <dir>` | `--dir <dir>` | Set target folder for cloning tools (default: `~/Tools`) |
@@ -202,6 +256,20 @@ python3 setup-hack.py --deps
 | `-t <tools>`| `--tools <tools>` | Install tools by comma-separated names |
 | | `--deps` | Install base Linux/macOS/Windows prerequisites, headers, and wordlists |
 | | `--no-interactive` | Disable raw terminal mode for automated scripts / pipes |
+
+---
+
+## Isolated Python Virtual Environments
+
+Modern operating systems (e.g. Debian 12+, Ubuntu 23+, macOS Homebrew, Arch Linux) enforce PEP 668 ("externally managed environment"), preventing global `pip install` commands from interfering with system packages. Installing multiple security tools into a single global environment frequently leads to conflicting dependency versions (e.g., conflicting `urllib3`, `requests`, `cryptography`, or `pydantic` versions).
+
+`setup_hack_env` solves this natively:
+1. **Isolated `.venv` Per Tool**: Each Python tool receives its own isolated virtual environment inside its cloned directory (`<tool>/.venv`).
+2. **Auto-Generated Launchers**: Every installed tool automatically receives an executable wrapper script:
+   - On Linux/macOS: `<tool>/run.sh`
+   - On Windows: `<tool>\run.bat`
+   Running `./run.sh` automatically routes execution through that tool's specific `.venv` interpreter without manual activation.
+3. **Toggleable**: To install into the active interpreter instead, simply pass `--no-venv`.
 
 ---
 
@@ -230,7 +298,7 @@ python3 setup-hack.py --deps
 
 ## Contributing
 
-Contributions, issues, and tool recommendations are welcome! If you know of a stellar, active open-source security tool that should be included, open a Pull Request or Issue with the official upstream repository link.
+Contributions, issues, and tool recommendations are welcome! If you know of an active open-source security tool that should be included, open a Pull Request or Issue with the official upstream repository link.
 
 ## License
 
